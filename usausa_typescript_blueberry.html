@@ -1,0 +1,2024 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>うさうさ TypeScript農園 🫐 — ゼロから実務まで</title>
+<style>
+:root{
+  /* ── ペールブルーベリー農園パレット（低彩度・嫌味にしない） ── */
+  --mist:#EDEFFB;      /* 朝霧の畝 background */
+  --mist-2:#E3E6F7;    /* 少し濃い霧 */
+  --cream:#FBFAF6;     /* 実の中身・クリーム surface */
+  --card:#FFFFFFEE;    /* カード */
+  --deep:#463A6B;      /* 実の皮（深いブルーベリー）見出し */
+  --berry:#6B5BA6;     /* 中間ブルーベリー primary */
+  --berry-soft:#8C7DC4;
+  --bloom:#A9B4E8;     /* 銀の果粉 bloom soft accent */
+  --bloom-2:#C4CCF0;
+  --leaf:#6E9166;      /* 茂みの葉 success */
+  --leaf-soft:#E7F0E4;
+  --leaf-deep:#3F5C39;   /* 濃い葉アクセント */
+  --leaf-lite:#A6C39B;   /* 薄い葉アクセント */
+  --deep-2:#352B54;      /* さらに濃いブルーベリー（ヘッダ/フッタ） */
+  --sun:#E2A93F;       /* 農園の陽 honey */
+  --sun-soft:#FBF1DC;
+  --ink:#2E2741;       /* 文字（紫みの黒） */
+  --ink-soft:#5A5274;
+  --line:#D9DCF0;      /* 罫 */
+  --danger:#B5587A;    /* 訂正・エラー（くすんだ赤紫） */
+  --danger-soft:#F8E9F0;
+  --code-bg:#2B2640;   /* コード背景（夜の農園） */
+  --code-fg:#E8E6F4;
+  --radius:16px;
+  --shadow:0 8px 30px rgba(70,58,107,.10),0 2px 8px rgba(70,58,107,.06);
+  --jp:"Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,"Noto Sans JP",system-ui,sans-serif;
+  --mono:"SFMono-Regular","Cascadia Code","Source Han Code JP",Consolas,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;font-family:var(--jp);color:var(--ink);line-height:1.75;
+  background:
+    radial-gradient(1200px 480px at 12% -10%, #F4F1FB 0%, transparent 60%),
+    radial-gradient(900px 460px at 100% 0%, #EAF0EC 0%, transparent 55%),
+    linear-gradient(180deg,var(--mist) 0%, #F2F3FB 55%, #F4F5FA 100%);
+  background-attachment:fixed;
+}
+a{color:var(--berry);text-decoration:none}
+a:hover{text-decoration:underline}
+:focus-visible{outline:3px solid var(--bloom);outline-offset:2px;border-radius:6px}
+
+/* ── レイアウト ── */
+.shell{display:flex;align-items:stretch;min-height:100vh;width:100%}
+.side{
+  flex:0 0 288px;width:288px;
+  position:sticky;top:0;align-self:flex-start;max-height:100vh;overflow-y:auto;
+  background:linear-gradient(180deg,#F7F6FC 0%, #EFF0FA 100%);
+  border-right:1px solid var(--line);padding:22px 16px 40px;
+}
+.main{flex:1 1 0%;min-width:0;padding:0 0 80px;position:relative;z-index:1}
+.wrap{max-width:920px;margin:0 auto;padding:0 24px}
+
+/* ── ブランド ── */
+.brand{display:flex;gap:11px;align-items:center;margin-bottom:6px}
+.brand .logo{font-size:30px;line-height:1;filter:saturate(.85)}
+.brand b{font-size:16px;color:var(--deep);letter-spacing:.02em}
+.brand small{display:block;color:var(--ink-soft);font-size:11px;font-weight:500}
+.tagline{font-size:11px;color:var(--berry-soft);margin:2px 0 16px;font-style:italic}
+
+/* ── 収穫カゴ（署名要素） ── */
+.basket{
+  background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:12px 13px;margin-bottom:16px;box-shadow:var(--shadow)
+}
+.basket .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+.basket .top span{font-size:11px;color:var(--ink-soft)}
+.basket .count{font-size:13px;font-weight:700;color:var(--deep)}
+.basket .count b{color:var(--berry);font-size:18px}
+.bush{height:30px;display:flex;align-items:flex-end;gap:2px;overflow:hidden}
+.bush i{flex:1;border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;background:var(--mist-2);
+  height:8px;transition:height .5s cubic-bezier(.2,.8,.2,1),background .4s}
+.bush i.ripe{background:radial-gradient(circle at 35% 30%, #B9A8E6 0%, var(--berry) 55%, var(--deep) 100%);height:22px}
+.basket .bar{height:6px;border-radius:6px;background:var(--mist-2);margin-top:9px;overflow:hidden}
+.basket .bar > i{display:block;height:100%;width:0;border-radius:6px;
+  background:linear-gradient(90deg,var(--bloom),var(--berry));transition:width .6s ease}
+
+/* ── ナビ ── */
+.nav{list-style:none;margin:0;padding:0}
+.nav .grp{font-size:10.5px;font-weight:700;letter-spacing:.12em;color:var(--berry-soft);
+  text-transform:uppercase;margin:16px 8px 6px}
+.nav button{
+  width:100%;text-align:left;cursor:pointer;
+  font-family:inherit;font-size:13.5px;color:var(--ink-soft);
+  padding:9px 11px;border-radius:11px;display:flex;gap:9px;align-items:center;line-height:1.35;
+  background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(70,58,107,.07);margin-bottom:6px;
+  transition:transform .08s ease, box-shadow .15s ease, background .15s, color .15s, border-color .15s
+}
+.nav button .ico{width:20px;text-align:center;flex:none;font-size:15px}
+.nav button .dot{margin-left:auto;width:8px;height:8px;border-radius:50%;background:var(--mist-2);flex:none}
+.nav button.done .dot{background:var(--leaf)}
+.nav button:hover{background:var(--mist);color:var(--deep);border-color:var(--bloom);box-shadow:0 4px 10px rgba(70,58,107,.13);transform:translateY(-1px)}
+.nav button:active{transform:translateY(1px);background:var(--mist-2);box-shadow:inset 0 2px 6px rgba(70,58,107,.20);border-color:var(--bloom)}
+.nav button.active{background:linear-gradient(180deg,#fff,var(--mist));color:var(--deep);font-weight:700;border-color:var(--berry-soft);
+  box-shadow:0 3px 10px rgba(107,91,166,.20), inset 3px 0 0 var(--berry)}
+.nav button.active:active{transform:translateY(1px);box-shadow:inset 0 2px 6px rgba(107,91,166,.28), inset 3px 0 0 var(--berry)}
+
+/* ── ヒーロー ── */
+.hero{position:relative;overflow:hidden;border-bottom:3px solid var(--leaf-deep);min-height:170px;
+  background:#463A6B;background-image:linear-gradient(160deg,var(--deep-2) 0%, var(--deep) 48%, #56487F 100%)}
+.hero .wrap{padding-top:42px;padding-bottom:30px;position:relative;z-index:2}
+.hero .eyebrow{font-size:12px;color:var(--leaf-lite);font-weight:700;letter-spacing:.14em}
+.hero h1{font-size:clamp(26px,4vw,40px);line-height:1.25;margin:.3em 0 .25em;color:#fff;letter-spacing:.01em}
+.hero h1 .em{background:linear-gradient(transparent 60%, rgba(166,195,155,.55) 60%);color:#fff;border-radius:2px}
+.hero p.lead{font-size:15px;color:#DAD6EE;max-width:60ch;margin:0}
+.hero .farm{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.28}
+.hero .leaves{position:absolute;inset:0;z-index:0;pointer-events:none}
+.hero .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.chip{font-size:11.5px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.24);color:#EDEFFB;
+  padding:4px 11px;border-radius:999px;font-weight:600}
+
+/* ── 見出し・本文 ── */
+section.view{padding-top:30px;position:relative;z-index:1;min-height:50vh}
+.kicker{font-size:12px;color:var(--berry);font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+h2.title{font-size:25px;color:var(--deep);margin:.25em 0 .1em;letter-spacing:.01em}
+.subtitle{color:var(--ink-soft);font-size:14px;margin:0 0 8px}
+.divider{height:1px;background:linear-gradient(90deg,var(--bloom),transparent);margin:20px 0 6px}
+
+/* ── レッスン（4段：定義→たとえ→詳細→まとめ）── */
+.lesson{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:22px 24px;margin:18px 0}
+.lesson > h3{margin:0 0 12px;font-size:18px;color:var(--deep);display:flex;gap:9px;align-items:center}
+.lesson > h3 .n{font-size:11px;font-weight:700;color:#fff;background:var(--berry);
+  border-radius:7px;padding:2px 8px;letter-spacing:.04em}
+.tier{display:grid;grid-template-columns:92px 1fr;gap:0 14px;border-top:1px dashed var(--line);padding:13px 0}
+.tier:first-of-type{border-top:0}
+.tier .lab{font-size:12px;font-weight:700;color:var(--berry);padding-top:2px}
+.tier .lab .em{display:block;font-size:16px;margin-bottom:1px}
+.tier .bd{font-size:14.5px}
+.tier.summary{background:var(--sun-soft);margin:10px -10px -6px;padding:11px 14px;border-radius:10px;border-top:0}
+.tier.summary .lab{color:var(--sun)}
+.tier.summary .bd{font-weight:700;color:#7A5A12}
+.tier.analogy .bd{color:var(--ink-soft)}
+
+/* ── コード ── */
+.code{position:relative;background:var(--code-bg);border-radius:12px;margin:12px 0;overflow:hidden;
+  border:1px solid #3a3457}
+.code .hd{display:flex;align-items:center;gap:7px;padding:8px 12px;background:#241F38;border-bottom:1px solid #3a3457}
+.code .hd .d{width:10px;height:10px;border-radius:50%;background:#4a4566}
+.code .hd .fn{font-family:var(--mono);font-size:11.5px;color:#A79FD0;margin-left:6px}
+.code .hd .copy{margin-left:auto;font-family:var(--jp);font-size:11px;border:1px solid #4a4566;
+  color:#C8C2E6;background:transparent;border-radius:7px;padding:3px 10px;cursor:pointer}
+.code .hd .copy:hover{background:#34304f}
+.code pre{margin:0;padding:14px 16px;overflow-x:auto}
+.code code{font-family:var(--mono);font-size:13px;line-height:1.7;color:var(--code-fg);white-space:pre;tab-size:2}
+.tok-key{color:#C9A6F2}.tok-typ{color:#7FD7C4}.tok-str{color:#E6C07B}
+.tok-num{color:#A9D89E}.tok-com{color:#6E6790;font-style:italic}.tok-fn{color:#8AB4F8}
+.tok-pun{color:#9A93BE}.tok-lit{color:#E59FB0}
+
+.callout{border-left:4px solid var(--bloom);background:#fff;border:1px solid var(--line);
+  border-left:4px solid var(--bloom);border-radius:10px;padding:12px 16px;margin:14px 0;font-size:13.5px}
+.callout.warn{border-left-color:var(--sun);background:var(--sun-soft)}
+.callout.tip{border-left-color:var(--leaf);background:var(--leaf-soft)}
+.callout b{color:var(--deep)}
+.kbd{font-family:var(--mono);font-size:12px;background:#fff;border:1px solid var(--line);
+  border-bottom-width:2px;border-radius:6px;padding:1px 7px;color:var(--deep)}
+
+/* ── 練習（クイズ・バグ）── */
+.practice{background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px 22px;margin:16px 0}
+.practice .ph{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.practice .ph .tag{font-size:11px;font-weight:700;color:#fff;border-radius:7px;padding:2px 9px}
+.tag.q{background:var(--berry)}.tag.b{background:var(--danger)}
+.practice .qx{font-size:15px;color:var(--ink);margin:10px 0 12px;font-weight:600}
+.choices{display:grid;gap:8px}
+.choice{display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--line);background:var(--cream);
+  border-radius:11px;padding:10px 13px;cursor:pointer;font-size:14px;transition:all .15s}
+.choice:hover{border-color:var(--bloom);background:#fff}
+.choice .mk{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--bloom-2);
+  display:grid;place-items:center;font-size:12px;color:transparent;font-weight:800}
+.choice.correct{border-color:var(--leaf);background:var(--leaf-soft)}
+.choice.correct .mk{border-color:var(--leaf);background:var(--leaf);color:#fff}
+.choice.wrong{border-color:var(--danger);background:var(--danger-soft)}
+.choice.wrong .mk{border-color:var(--danger);background:var(--danger);color:#fff}
+.choice.disabled{cursor:default;opacity:.92}
+.inputrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.inputrow input{flex:1;min-width:220px;font-family:var(--mono);font-size:13.5px;
+  border:1.5px solid var(--line);border-radius:10px;padding:10px 13px;background:var(--cream);color:var(--ink)}
+.inputrow input:focus{border-color:var(--berry);outline:none;background:#fff}
+.btn{font-family:var(--jp);font-weight:700;font-size:13.5px;border:0;cursor:pointer;border-radius:10px;
+  padding:10px 18px;background:var(--berry);color:#fff;box-shadow:0 2px 6px rgba(107,91,166,.28);transition:filter .15s,transform .08s,box-shadow .12s}
+.btn:hover{filter:brightness(1.06);box-shadow:0 4px 12px rgba(107,91,166,.34)}
+.btn:active{transform:translateY(2px);box-shadow:inset 0 3px 7px rgba(46,39,65,.32)}
+.btn.ghost{background:#fff;color:var(--berry);border:1.5px solid var(--bloom);box-shadow:0 1px 3px rgba(70,58,107,.10)}
+.btn.ghost:active{transform:translateY(2px);box-shadow:inset 0 3px 6px rgba(70,58,107,.20)}
+.btn.sm{padding:7px 13px;font-size:12.5px}
+.explain{margin-top:12px;font-size:13.5px;background:var(--mist);border-radius:10px;padding:11px 14px;
+  border:1px solid var(--line);display:none}
+.explain.show{display:block;animation:fade .35s ease}
+.explain b{color:var(--deep)}
+.explain .verdict{font-weight:800;margin-right:6px}
+.verdict.ok{color:var(--leaf)}.verdict.ng{color:var(--danger)}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* バグ修正道場 */
+.bug-grid{display:grid;gap:12px}
+.bug-label{font-size:12px;font-weight:700;color:var(--ink-soft);margin:2px 0 -6px;display:flex;gap:6px;align-items:center}
+.bug-label.ng{color:var(--danger)}.bug-label.ok{color:var(--leaf)}
+.fixwrap{display:none}.fixwrap.show{display:block;animation:fade .35s ease}
+
+/* 参考文献 */
+.ref{font-size:13px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:12px 0}
+.ref ol{margin:6px 0 0;padding-left:20px}
+.ref li{margin:8px 0;color:var(--ink-soft);line-height:1.6}
+.ref li b{color:var(--ink)}
+.cheat{display:grid;grid-template-columns:1fr 1fr;gap:0;background:#fff;border:1px solid var(--line);
+  border-radius:12px;overflow:hidden;font-size:13px}
+.cheat div{padding:9px 14px;border-top:1px solid var(--line)}
+.cheat div:nth-child(-n+2){border-top:0}
+.cheat div.k{font-family:var(--mono);color:var(--deep);background:var(--mist);font-size:12.5px}
+
+.foot{max-width:920px;margin:40px auto 0;padding:20px 24px;border-top:3px solid var(--leaf-deep);border-radius:16px 16px 0 0;
+  background:#463A6B;background-image:linear-gradient(180deg,var(--deep) 0%, var(--deep-2) 100%);
+  color:#CFC9E6;font-size:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.foot b{color:#fff}
+.foot .leaf-dot{color:var(--leaf-lite)}
+.foot .stamp{color:#B9B2DC;font-weight:600}
+
+/* モバイル */
+.menu-btn{display:none}
+@media(max-width:860px){
+  .shell{display:block}
+  .main{width:100%}
+  .side{position:fixed;z-index:40;width:280px;left:0;top:0;transform:translateX(-105%);
+    transition:transform .28s ease;box-shadow:6px 0 30px rgba(70,58,107,.18)}
+  .side.open{transform:none}
+  .menu-btn{display:inline-flex;gap:7px;align-items:center;position:sticky;top:0;z-index:30;
+    margin:0;width:100%;border:0;border-bottom:1px solid var(--line);
+    background:#fff;color:var(--deep);font-family:var(--jp);font-weight:700;font-size:14px;
+    padding:13px 18px;cursor:pointer}
+  .scrim{display:none;position:fixed;inset:0;background:rgba(46,39,65,.34);z-index:35}
+  .scrim.open{display:block}
+  .cheat{grid-template-columns:1fr 1fr}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto}}
+
+/* ===== やさしく応援（収穫トースト） ===== */
+.cheer-wrap{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.cheer{background:linear-gradient(180deg,#fff,#F7F6FC);border:1px solid var(--line);color:var(--deep);font-weight:700;font-size:13.5px;padding:10px 16px;border-radius:999px;box-shadow:var(--shadow);display:flex;gap:8px;align-items:center;animation:cheerIn .4s ease both}
+.cheer .e{font-size:18px}
+@keyframes cheerIn{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+.cheer.out{animation:cheerOut .4s ease both}
+@keyframes cheerOut{to{opacity:0;transform:translateY(-8px)}}
+
+/* ===== AI先生：FAB ===== */
+.ai-fab{position:fixed;right:20px;bottom:20px;z-index:55;display:flex;gap:9px;align-items:center;background:linear-gradient(135deg,var(--berry),var(--berry-soft));color:#fff;border:none;cursor:pointer;font-family:var(--jp);font-weight:800;font-size:14px;padding:13px 18px;border-radius:999px;box-shadow:0 10px 26px rgba(107,91,166,.4)}
+.ai-fab:hover{filter:brightness(1.05)}
+.ai-fab .lg{font-size:19px;line-height:1}
+.ai-fab .nb{background:#fff;color:var(--berry);font-size:10px;font-weight:800;padding:1px 7px;border-radius:999px}
+
+/* ===== AI先生：パネル ===== */
+.ai-panel{position:fixed;right:20px;bottom:20px;z-index:58;width:min(420px,calc(100vw - 32px));height:min(620px,calc(100vh - 40px));background:var(--cream);border:1px solid var(--line);border-radius:20px;box-shadow:0 24px 70px rgba(46,39,65,.32);display:none;flex-direction:column;overflow:hidden}
+.ai-panel.open{display:flex}
+.ai-head{display:flex;align-items:center;gap:10px;padding:13px 15px;background:linear-gradient(135deg,var(--deep),var(--berry));color:#fff}
+.ai-head .av{font-size:22px;line-height:1}
+.ai-head b{font-size:14.5px}
+.ai-head small{display:block;font-size:11px;opacity:.85;font-weight:500}
+.ai-head .sp{margin-left:auto;display:flex;gap:4px}
+.ai-ico{background:rgba(255,255,255,.16);border:none;color:#fff;width:32px;height:32px;border-radius:10px;cursor:pointer;font-size:15px;display:grid;place-items:center}
+.ai-ico:hover{background:rgba(255,255,255,.28)}
+.ai-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:11px;background:linear-gradient(180deg,#F7F6FC,#EFF0FA)}
+.msg{max-width:86%;padding:10px 13px;border-radius:14px;font-size:13.5px;line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.msg.ai{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:5px;color:var(--ink)}
+.msg.me{align-self:flex-end;background:linear-gradient(135deg,var(--berry),var(--berry-soft));color:#fff;border-bottom-right-radius:5px}
+.msg.sys{align-self:center;background:var(--sun-soft);border:1px solid #EBD9AE;color:#7A5A1E;font-size:12.5px;text-align:center;max-width:96%}
+.msg code{background:rgba(70,58,107,.08);padding:1px 5px;border-radius:5px;font-family:var(--mono);font-size:.92em}
+.msg.me code{background:rgba(255,255,255,.2);color:#fff}
+.ai-typing{align-self:flex-start;color:var(--ink-soft);font-size:12.5px;display:flex;gap:5px;align-items:center}
+.ai-typing i{width:6px;height:6px;border-radius:50%;background:var(--berry-soft);display:inline-block;animation:blink 1s infinite}
+.ai-typing i:nth-child(2){animation-delay:.2s}.ai-typing i:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,60%,100%{opacity:.25}30%{opacity:1}}
+.ai-foot{border-top:1px solid var(--line);padding:9px;background:var(--cream)}
+.ai-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:7px;flex-wrap:wrap}
+.ai-toggle{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--ink-soft);cursor:pointer;user-select:none}
+.ai-note{font-size:11px;color:var(--ink-soft);line-height:1.5}
+.ai-inrow{display:flex;gap:7px;align-items:flex-end}
+.ai-foot textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:12px;padding:9px 11px;font-family:var(--jp);font-size:13.5px;line-height:1.6;max-height:120px;color:var(--ink);background:#fff}
+.ai-foot textarea:focus{outline:none;border-color:var(--berry-soft)}
+.ai-send{background:linear-gradient(135deg,var(--berry),var(--berry-soft));color:#fff;border:none;width:42px;height:42px;border-radius:12px;cursor:pointer;font-size:18px;flex:0 0 auto}
+.ai-send:disabled{opacity:.5;cursor:default}
+.ai-mic{background:#fff;border:1px solid var(--line);color:var(--berry);width:42px;height:42px;border-radius:12px;cursor:pointer;font-size:17px;flex:0 0 auto}
+.ai-mic.rec{background:var(--danger);color:#fff;border-color:var(--danger);animation:pulse 1.1s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 7px rgba(181,88,122,.18)}}
+.ai-settings{display:none;flex-direction:column;gap:10px;padding:14px;overflow-y:auto;background:var(--cream)}
+.ai-settings.open{display:flex;flex:1}
+.ai-settings label{font-size:12px;font-weight:700;color:var(--deep);display:block;margin-bottom:3px}
+.ai-settings input{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-family:var(--mono);font-size:12.5px;color:var(--ink);background:#fff}
+.ai-settings input:focus{outline:none;border-color:var(--berry-soft)}
+.ai-settings .hint{font-size:11px;color:var(--ink-soft);line-height:1.55;margin-top:3px}
+.ai-settings .privacy{background:var(--sun-soft);border:1px solid #EBD9AE;border-radius:10px;padding:10px;font-size:11.5px;color:#7A5A1E;line-height:1.6}
+.ai-row{display:flex;gap:8px}
+.ai-btn{flex:1;border:none;border-radius:10px;padding:10px;font-family:var(--jp);font-weight:800;font-size:13px;cursor:pointer}
+.ai-btn.primary{background:linear-gradient(135deg,var(--berry),var(--berry-soft));color:#fff}
+.ai-btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink-soft)}
+@media(max-width:520px){.ai-panel{right:8px;bottom:8px;width:calc(100vw - 16px);height:calc(100vh - 16px)}.ai-fab{right:12px;bottom:12px}}
+/* ===== 文法ライブラリ（基本/応用） ===== */
+.lib-sec{margin:22px 0}
+.lib-h{color:var(--deep);font-size:17px;margin:0 0 11px;display:flex;gap:9px;align-items:center;padding-left:11px;border-left:4px solid var(--leaf)}
+.lib-h .lf{color:var(--leaf-deep);font-size:15px}
+.lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:12px}
+.lib-card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px 15px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.lib-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(var(--leaf-lite),var(--leaf))}
+.lib-syntax{display:inline-block;font-family:var(--mono);font-size:12.5px;color:var(--code-fg);background:var(--code-bg);padding:3px 9px;border-radius:7px;margin-bottom:8px;word-break:break-word}
+.lib-desc{font-size:13px;color:var(--ink);line-height:1.65}
+.lib-ex{margin:9px 0 0;background:var(--code-bg);color:var(--code-fg);border-radius:9px;padding:9px 11px;overflow:auto;font-size:12px;font-family:var(--mono);line-height:1.55}
+.lib-ex code{font-family:var(--mono)}
+
+/* ===== 図解（ダイアグラム） ===== */
+.figure{margin:18px 0;background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow);overflow:hidden}
+.fig-cap{display:flex;gap:9px;align-items:center;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--deep),var(--berry));padding:11px 15px;font-size:14px}
+.fig-cap .lf{color:var(--leaf-lite)}
+.fig-svg{padding:16px;overflow-x:auto;background:linear-gradient(180deg,#FBFAFE,#F3F4FC)}
+.fig-svg svg{display:block;max-width:100%;height:auto;margin:0 auto}
+.fig-note{margin:0;padding:10px 15px;font-size:12.5px;color:var(--ink-soft);border-top:1px dashed var(--line);background:var(--leaf-soft)}
+
+/* ===== バグ退治ボタン（テントウムシ） ===== */
+.bugbtn{display:inline-flex;gap:8px;align-items:center;justify-self:start;cursor:pointer;
+  font-family:var(--jp);font-weight:800;font-size:13px;color:#fff;
+  background:linear-gradient(135deg,#C23A2E,#E0584C);
+  border:2px solid #2A2238;border-radius:999px;padding:8px 16px 8px 12px;
+  box-shadow:0 4px 13px rgba(194,58,46,.32),inset 0 1px 0 rgba(255,255,255,.25)}
+.bugbtn:hover{filter:brightness(1.06);transform:translateY(-1px)}
+.bugbtn .lady{position:relative;width:20px;height:18px;flex:none}
+.bugbtn .lady svg{display:block}
+/* ===== 押したらへこむ：共通プレス処理 ===== */
+.choice{transition:border-color .12s,background .12s,transform .08s,box-shadow .12s}
+.choice:not(.disabled):active{transform:translateY(1px);box-shadow:inset 0 2px 6px rgba(70,58,107,.16)}
+.code .hd .copy{transition:background .12s,transform .08s,box-shadow .12s}
+.code .hd .copy:active{transform:translateY(1px);box-shadow:inset 0 2px 5px rgba(0,0,0,.38)}
+.bugbtn:active{transform:translateY(2px)!important;box-shadow:inset 0 3px 7px rgba(42,34,56,.5)!important}
+.ai-fab:active{transform:translateY(2px);box-shadow:0 3px 10px rgba(107,91,166,.3),inset 0 3px 8px rgba(46,39,65,.32)}
+.ai-send:active,.ai-mic:active,.ai-ico:active,.ai-btn:active{transform:translateY(2px);box-shadow:inset 0 3px 7px rgba(46,39,65,.3)}
+.menu-btn:active{transform:translateY(1px)}
+
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="brand">
+      <span class="logo">🐰</span>
+      <div><b>うさうさ TypeScript農園</b><small>うさうさ研修工房 / 法人研修品質 · v3.2 (2026-06-25)</small></div>
+    </div>
+    <div class="tagline">面白きこともなき世を面白く 🫐</div>
+
+    <div class="basket" aria-label="収穫カゴ（学習の進み具合）">
+      <div class="top"><span>🧺 収穫カゴ</span><span class="count"><b id="harvest">0</b> / <span id="total">0</span> 粒</span></div>
+      <div class="bush" id="bush" aria-hidden="true"></div>
+      <div class="bar"><i id="bar"></i></div>
+    </div>
+
+    <ul class="nav" id="nav"></ul>
+  </aside>
+
+  <div class="scrim" id="scrim"></div>
+
+  <main class="main">
+    <button class="menu-btn" id="menuBtn" aria-label="目次を開く">☰ 目次 / カリキュラム</button>
+
+    <header class="hero">
+      <svg class="farm" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+        <defs>
+          <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#F6E2B0"/><stop offset="100%" stop-color="#F6E2B0" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <circle cx="1050" cy="70" r="120" fill="url(#sun)"/>
+        <path d="M0 300 Q300 250 600 295 T1200 290 V360 H0Z" fill="#E6EAF6"/>
+        <path d="M0 320 Q300 290 600 322 T1200 318 V360 H0Z" fill="#DBE0F2"/>
+        <g opacity=".85">
+          <!-- ブルーベリーの茂み -->
+          <g transform="translate(120,300)"><ellipse cx="0" cy="0" rx="70" ry="40" fill="#C9CFEB"/><circle cx="-22" cy="-8" r="6" fill="#6B5BA6"/><circle cx="8" cy="-14" r="6" fill="#5B4E8C"/><circle cx="26" cy="-2" r="6" fill="#6B5BA6"/></g>
+          <g transform="translate(360,310)"><ellipse cx="0" cy="0" rx="80" ry="44" fill="#C2C9E8"/><circle cx="-30" cy="-10" r="6.5" fill="#5B4E8C"/><circle cx="0" cy="-18" r="6.5" fill="#6B5BA6"/><circle cx="30" cy="-6" r="6.5" fill="#5B4E8C"/></g>
+          <g transform="translate(640,305)"><ellipse cx="0" cy="0" rx="74" ry="42" fill="#C9CFEB"/><circle cx="-20" cy="-12" r="6" fill="#6B5BA6"/><circle cx="14" cy="-16" r="6" fill="#5B4E8C"/></g>
+          <g transform="translate(900,312)"><ellipse cx="0" cy="0" rx="86" ry="46" fill="#C2C9E8"/><circle cx="-28" cy="-12" r="6.5" fill="#5B4E8C"/><circle cx="6" cy="-20" r="6.5" fill="#6B5BA6"/><circle cx="34" cy="-6" r="6.5" fill="#5B4E8C"/></g>
+        </g>
+      </svg>
+      <svg class="leaves" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <defs>
+          <g id="leaf">
+            <path d="M0,0 C16,-12 40,-10 52,2 C40,14 16,16 0,4 Z"/>
+            <path d="M2,2 L48,2" stroke="rgba(255,255,255,.28)" stroke-width="1.4" fill="none"/>
+          </g>
+        </defs>
+        <use href="#leaf" transform="translate(60,40) rotate(-24) scale(1.5)" fill="var(--leaf-deep)" opacity=".9"/>
+        <use href="#leaf" transform="translate(1080,52) rotate(150) scale(1.7)" fill="var(--leaf-deep)" opacity=".85"/>
+        <use href="#leaf" transform="translate(1140,250) rotate(112) scale(1.3)" fill="var(--leaf-deep)" opacity=".8"/>
+        <use href="#leaf" transform="translate(150,300) rotate(18) scale(1.4)" fill="var(--leaf-lite)" opacity=".75"/>
+        <use href="#leaf" transform="translate(1010,300) rotate(-12) scale(1.5)" fill="var(--leaf-lite)" opacity=".7"/>
+        <use href="#leaf" transform="translate(40,165) rotate(8) scale(1.1)" fill="var(--leaf-lite)" opacity=".55"/>
+        <use href="#leaf" transform="translate(1150,150) rotate(196) scale(1.2)" fill="var(--leaf-deep)" opacity=".6"/>
+      </svg>
+      <div class="wrap">
+        <div class="eyebrow">ZERO → 中級 → 実務 / オフライン完結</div>
+        <h1>TypeScriptを、<span class="em">畑をならすように</span><br/>ゼロから一粒ずつ。</h1>
+        <p class="lead">公式ドキュメント準拠の基本文法から、VSCode練習・テスト・バグ修正・プチ問題、そして AI×TypeScript の実務基礎まで。査読済みの学習科学にもとづいて「読む→思い出す→直す」を繰り返し、知識を“収穫”していく単一ファイル教材です。</p>
+        <div class="chips">
+          <span class="chip">🫐 公式ドキュメント準拠</span>
+          <span class="chip">📖 文法ライブラリ＋図解</span>
+          <span class="chip">🧪 テスト & バグ修正</span>
+          <span class="chip">🤖 AI×TypeScript</span>
+          <span class="chip">🐰 AI先生（音声相談）</span>
+          <span class="chip">💜 やさしく応援</span>
+          <span class="chip">📄 査読論文ベースの学習法</span>
+          <span class="chip">🔌 完全オフライン</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <section class="view" id="view"></section>
+    </div>
+    <footer class="foot">
+      <span><span class="leaf-dot">🌿</span> <b>うさうさ研修工房</b> — うさうさ TypeScript農園</span>
+      <span>嘘つかない原則：内容はTypeScript公式準拠／引用は実在論文のみ</span>
+      <span class="stamp">v3.2 ・ 刻印 2026-06-25 <span class="leaf-dot">🌿</span></span>
+    </footer>
+  </main>
+</div>
+
+<!-- ===== やさしく応援トースト ===== -->
+<div class="cheer-wrap" id="cheerWrap" aria-live="polite" aria-atomic="true"></div>
+
+<!-- ===== AI先生（本物のAI / BYOK） ===== -->
+<button class="ai-fab" id="aiFab" aria-label="AI先生に質問する">
+  <span class="lg">🐰</span><span>AI先生にきく</span><span class="nb">本物のAI</span>
+</button>
+
+<section class="ai-panel" id="aiPanel" aria-label="うさうさAI先生 チャット" role="dialog" aria-modal="false">
+  <div class="ai-head">
+    <span class="av">🐰</span>
+    <div><b>うさうさAI先生</b><small>やさしく応援 / TypeScript個人指導</small></div>
+    <div class="sp">
+      <button class="ai-ico" id="aiGear" title="設定（APIキー）" aria-label="設定">⚙️</button>
+      <button class="ai-ico" id="aiClose" title="閉じる" aria-label="閉じる">✕</button>
+    </div>
+  </div>
+
+  <div class="ai-body" id="aiBody"></div>
+
+  <div class="ai-foot" id="aiFoot">
+    <div class="ai-toolbar">
+      <label class="ai-toggle"><input type="checkbox" id="aiSpeak"/> 🔊 読み上げ</label>
+      <span class="ai-note" id="aiVoiceNote"></span>
+    </div>
+    <div class="ai-inrow">
+      <button class="ai-mic" id="aiMic" title="音声で相談" aria-label="音声入力">🎤</button>
+      <textarea id="aiInput" rows="1" placeholder="TypeScriptの質問をどうぞ…（例：unknown と any の違いは？）"></textarea>
+      <button class="ai-send" id="aiSendBtn" title="送信" aria-label="送信">➤</button>
+    </div>
+  </div>
+
+  <div class="ai-settings" id="aiSettings">
+    <div>
+      <label for="aiKey">Anthropic APIキー（あなた専用 / BYOK）</label>
+      <input id="aiKey" type="password" placeholder="sk-ant-..." autocomplete="off" spellcheck="false"/>
+      <p class="hint">本物のAIを動かすには、あなた自身のAPIキーが必要です。Anthropicの管理コンソールで発行できます。</p>
+    </div>
+    <div>
+      <label for="aiModel">モデル名</label>
+      <input id="aiModel" type="text" spellcheck="false"/>
+      <p class="hint">⚠️ 嘘つかない原則：モデル名は時期で変わります。最新は<b>公式ドキュメント</b>で確認してください。</p>
+    </div>
+    <div class="privacy">
+      🔒 <b>プライバシー</b>：APIキーは<b>このブラウザのlocalStorageだけ</b>に保存され、送信先は<b>Anthropic APIのみ</b>です。第三者には一切送られません。個人・社内のローカル利用向けの機能です。
+    </div>
+    <div class="ai-row">
+      <button class="ai-btn primary" id="aiSave">保存</button>
+      <button class="ai-btn ghost" id="aiClear">キーを消す</button>
+    </div>
+    <button class="ai-btn ghost" id="aiBack">← チャットに戻る</button>
+  </div>
+</section>
+
+<script>
+"use strict";
+/* =========================================================================
+   うさうさ TypeScript農園 — エンジン
+   - データ駆動でカリキュラムを描画
+   - クイズ正解 / バグ修正の閲覧で「ブルーベリーを収穫」
+   - 進捗は localStorage（file:// で不可なら自動でメモリにフォールバック）
+   ========================================================================= */
+
+/* ---- 簡易シンタックスハイライト（TS/JS用・オフライン）---- */
+function hl(src){
+  // 1) エスケープ
+  let s = src.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  // 2) プレースホルダで保護しながら着色（順序が重要）
+  const store=[]; const keep=(cls,txt)=>{store.push('<span class="'+cls+'">'+txt+'</span>');return "\u0000"+(store.length-1)+"\u0001";};
+  s = s.replace(/\/\/[^\n]*/g, m=>keep("tok-com",m));               // 行コメント
+  s = s.replace(/(["'])(?:\\.|(?!\1).)*\1/g, m=>keep("tok-str",m));  // 文字列
+  s = s.replace(/\b\d+(?:\.\d+)?\b/g, m=>keep("tok-num",m));         // 数値
+  const kw=["const","let","var","function","return","if","else","for","while","interface","type","class","extends","implements","public","private","protected","readonly","abstract","new","import","export","from","as","async","await","try","catch","finally","throw","enum","keyof","typeof","in","of","void","never","unknown","any","this","super","yield","default","switch","case","break","static","get","set"];
+  s = s.replace(new RegExp("\\b("+kw.join("|")+")\\b","g"), m=>keep("tok-key",m));
+  const ty=["string","number","boolean","bigint","symbol","null","undefined","object","Array","Promise","Record","Partial","Required","Readonly","Pick","Omit","ReturnType","Awaited","Map","Set","Date","T","K","U","V"];
+  s = s.replace(new RegExp("\\b("+ty.join("|")+")\\b","g"), m=>keep("tok-typ",m));
+  s = s.replace(/([A-Za-z_$][\w$]*)(?=\s*\()/g, (m)=> /^\u0000/.test(m)? m : keep("tok-fn",m)); // 関数呼び出し
+  // 3) 復元
+  s = s.replace(/\u0000(\d+)\u0001/g, (_,i)=>store[+i]);
+  return s;
+}
+
+/* ---- ストレージ（安全フォールバック）---- */
+const Store=(function(){
+  let mem={}; let ok=true;
+  try{ const k="__usa_ts__"; localStorage.setItem(k,"1"); localStorage.removeItem(k);}catch(e){ ok=false; }
+  return {
+    get(k){ try{ return ok? localStorage.getItem(k): (k in mem? mem[k]:null);}catch(e){return mem[k]??null;} },
+    set(k,v){ try{ ok? localStorage.setItem(k,v): (mem[k]=v);}catch(e){ mem[k]=v; } }
+  };
+})();
+const PKEY="usausa_ts_farm_progress_v1";
+let done = new Set(JSON.parse(Store.get(PKEY)||"[]"));
+function save(){ Store.set(PKEY, JSON.stringify([...done])); }
+function markDone(id){ if(!done.has(id)){ done.add(id); save(); refreshProgress(); refreshNavDots(); if(typeof cheer==="function") cheer(); } }
+
+/* ===================== カリキュラム・データ ===================== */
+/* code は配列（行）を \n 連結。バッククォート回避で安全。 */
+const C = arr => arr.join("\n");
+
+const DATA = [
+ {grp:"はじめに"},
+ {
+  id:"intro", ico:"🫐", nav:"ようこそ / 学び方",
+  kicker:"START", title:"ようこそ、ブルーベリー農園へ", sub:"このツールの歩き方と、ズルなしで身につく学び方",
+  lessons:[
+   {n:"WHY", title:"なぜ TypeScript を学ぶのか", tiers:{
+     def:"TypeScript（TS）は、JavaScript に「静的な型」を足した言語。書いている最中＝実行する前に、型の取り違えを見つけてくれる。",
+     analogy:"JSは“ラベルなしの瓶”が並ぶ農園の倉庫。TSは“中身を書いたラベル付きの瓶”。出荷（実行）前に、ジャム瓶とピクルス瓶の取り違えに気づける。",
+     detail:"TSはそのまま動く言語ではなく、tsc（コンパイラ）が型を検査して、ただのJavaScriptに変換する。型の情報は実行時には消えるが、開発中のエディタ補完・リファクタ・バグの早期発見という大きな見返りがある。とくに人数が増える実務コードで効く。",
+     summary:"TSは「出荷前に間違いを弾く」ためのJS。動く速さではなく、壊れにくさを買う。"
+   }},
+   {n:"HOW", title:"この農園の歩き方", tiers:{
+     def:"左の畝（メニュー）を上から順に。各レッスンは「定義→たとえ→詳細→一言まとめ」の4段で進む。",
+     analogy:"畑は一気に耕さない。1畝ずつ、水をやり、実を摘む。読むだけでなく“思い出して答える”と実が熟す。",
+     detail:"各章の最後に【プチ問題】と【バグ修正道場】がある。クイズに正解 or バグの修正を確認すると、ブルーベリーを1粒「収穫」。左上のカゴに貯まる。進捗は自動保存（このファイルを次に開いても残る）。",
+     summary:"読む→思い出す→直す。摘んだ粒の数だけ、確実に進んでいる。"
+   }},
+   {n:"RULE", title:"嘘つかない原則", tiers:{
+     def:"この教材の内容は TypeScript 公式ドキュメントの仕様に沿い、引用する論文は実在のものだけを使う。",
+     analogy:"農園主が産地を偽らないのと同じ。出どころの怪しい実は、カゴに入れない。",
+     detail:"ブラウザ内で「型チェックが通った風」の演出はしない。実際のコンパイルは VSCode + tsc で行う（だからこそ VSCode 練習を重視する）。学習法の根拠も、章末に出典付きで明記している。",
+     summary:"演出より正確さ。確かめられることだけを、確かめられる形で。"
+   }}
+  ],
+  practice:[
+   {type:"mc", id:"intro-q1", q:"TypeScript のコードは、最終的にどうやって動く？",
+    choices:["ブラウザがTSを直接実行する","tsc が JavaScript に変換してから実行する","型情報を持ったまま実行時に型チェックされる","Python に変換されて動く"],
+    answer:1, explain:"TSは tsc でJSにコンパイルされて動きます。型は<b>実行時には消える</b>（型消去）ので、実行時の検証が必要なら別途 zod 等を使います（後の章で扱います）。"}
+  ]
+ },
+
+ {grp:"基礎（ゼロから）"},
+ {
+  id:"setup", ico:"🛠️", nav:"環境構築 & Hello World",
+  kicker:"CH.01", title:"環境構築 & はじめての Hello World", sub:"VSCode・Node・tsc をそろえて、最初の1ファイルを動かす",
+  lessons:[
+   {n:"WHAT", title:"必要な道具をそろえる", tiers:{
+     def:"必要なのは ①Node.js（LTS版） ②VSCode ③TypeScript本体（npmで入れる）の3つ。",
+     analogy:"畑仕事の前に、長靴・スコップ・じょうろをそろえる感覚。",
+     detail:"Node.js は公式サイトからLTS版を入れる。VSCodeは標準でTSを理解するので“TS拡張”は不要。プロジェクトごとにTSを入れるのが実務の作法（グローバル汚染を避ける）。",
+     summary:"Node + VSCode を入れたら、あとはプロジェクト単位でTSを足すだけ。"
+   }, code:[{fn:"ターミナル", body:C([
+     "# 1) プロジェクト用フォルダを作って入る",
+     "mkdir ts-farm && cd ts-farm",
+     "",
+     "# 2) package.json を作成",
+     "npm init -y",
+     "",
+     "# 3) TypeScript を開発依存として追加",
+     "npm install -D typescript",
+     "",
+     "# 4) tsconfig.json（設定ファイル）を生成",
+     "npx tsc --init"
+   ])}]},
+   {n:"HOW", title:"Hello, Blueberry! を動かす", tiers:{
+     def:"hello.ts を作り、tsc でJSに変換し、node で実行する。これが基本の往復。",
+     analogy:"種（.ts）をまき、tscで芽（.js）にして、nodeで収穫する流れ。",
+     detail:"まず hello.ts を書く。型注釈 : string は今は“おまじない”でOK。VSCodeで保存したら、ターミナルで tsc を実行→ hello.js ができる→ node で実行。毎回コンパイルが面倒なら tsx で直接実行もできる（後述）。",
+     summary:"書く→tscでJSに→nodeで実行。最初はこの一往復を体に入れる。"
+   }, code:[
+     {fn:"hello.ts", body:C([
+       "// はじめてのTypeScript：型注釈つきの変数",
+       'const message: string = "Hello, Blueberry TypeScript! 🫐";',
+       "console.log(message);",
+       "",
+       "// 数値の合計（戻り値も型注釈）",
+       "function add(a: number, b: number): number {",
+       "  return a + b;",
+       "}",
+       "console.log(add(3, 4)); // 7"
+     ])},
+     {fn:"ターミナル", body:C([
+       "# コンパイル（hello.js が生成される）",
+       "npx tsc hello.ts",
+       "# 実行",
+       "node hello.js",
+       "",
+       "# ── 楽な方法：tsx で .ts を直接実行 ──",
+       "npm install -D tsx",
+       "npx tsx hello.ts"
+     ])}
+   ]}
+  ],
+  callouts:[
+   {k:"tip", html:"<b>VSCode練習：</b>まず <span class='kbd'>Ctrl/⌘ + `</span> でターミナルを開く。型を確認したい変数に<b>マウスを当てる（ホバー）</b>と推論された型が出る。エラーは<b>「問題」パネル</b>（<span class='kbd'>Ctrl/⌘+Shift+M</span>）に一覧表示される。"},
+   {k:"warn", html:"<b>つまずき注意：</b><code>npx tsc</code> が「見つからない」場合は、手順③の <code>npm install -D typescript</code> をやり直す。グローバルに入れず<b>プロジェクト内</b>に入れるのが安全。"}
+  ],
+  practice:[
+   {type:"input", id:"setup-q1", q:"TypeScriptのコンパイラを実行して hello.ts → hello.js を作るコマンドは？（npx から）",
+    accept:["npx tsc hello.ts","npx tsc hello.ts ","tsc hello.ts"], placeholder:"npx tsc ____",
+    explain:"<code>npx tsc hello.ts</code> でコンパイルできます。設定ファイル(tsconfig)がある場合は <code>npx tsc</code> だけでプロジェクト全体をビルドできます。"},
+   {type:"bug", id:"setup-b1", tag:"環境",
+    title:"なぜ実行できない？",
+    buggy:C(['// hello.ts を作ったのに「node hello.ts」でエラーになる…','node hello.ts','// SyntaxError や Unknown file extension が出る']),
+    hint:"node は素の .ts を理解しない。",
+    fixed:C(['# 方法A：先にJSへコンパイルしてから node','npx tsc hello.ts','node hello.js','','# 方法B：tsx で .ts を直接実行','npx tsx hello.ts']),
+    explain:"node は標準では TypeScript を直接実行しません（環境により実験的対応もありますが基礎では分けて考える）。<b>tscでJSにしてからnode</b>、または<b>tsxで直接実行</b>が確実です。"}
+  ]
+ },
+
+ {
+  id:"types", ico:"🔤", nav:"型の基本",
+  kicker:"CH.02", title:"型の基本 — 注釈と推論", sub:"プリミティブ型・配列・タプル・any/unknown/never",
+  lessons:[
+   {n:"WHAT", title:"型注釈と型推論", tiers:{
+     def:"型注釈は「: 型」で明示すること。型推論は、TSが初期値から型を自動で決めてくれること。",
+     analogy:"ラベルを自分で貼る（注釈）か、中身を見て農園主が貼ってくれる（推論）か。",
+     detail:"初期値があるなら推論に任せてOK。関数の引数や、初期値のない宣言、公開する境界（API・関数の戻り）では注釈を付けると安全＆読みやすい。",
+     summary:"中身が見えれば推論に任せ、境界では注釈で守る。"
+   }, code:[{fn:"types_basic.ts", body:C([
+     "let a = 10;            // number と推論",
+     "let b: string;          // 初期値なし → 注釈で型を宣言",
+     "b = \"blueberry\";",
+     "",
+     "// プリミティブ型",
+     "const s: string = \"jam\";",
+     "const n: number = 3.14;",
+     "const ok: boolean = true;",
+     "const nothing: null = null;",
+     "const notset: undefined = undefined;",
+     "const big: bigint = 100n;",
+     "const tag: symbol = Symbol(\"id\");"
+   ])}]},
+   {n:"WHAT", title:"配列とタプル", tiers:{
+     def:"配列は同じ型の並び（number[] か Array<number>）。タプルは「個数と型の順番が決まった」並び。",
+     analogy:"配列は“同じ実が並ぶカゴ”、タプルは“[名前, 個数]の決まった伝票”。",
+     detail:"タプルは要素ごとに型と位置が固定。座標 [number, number] や、戻り値で複数返すときに便利。読みやすさのため、要素にラベルも付けられる。",
+     summary:"並びが自由なら配列、順番と意味が固定なら タプル。"
+   }, code:[{fn:"array_tuple.ts", body:C([
+     "const berries: string[] = [\"blue\", \"straw\"];",
+     "const counts: Array<number> = [12, 5, 8];",
+     "",
+     "// タプル：型と個数が固定",
+     "const point: [number, number] = [35, 139];",
+     "",
+     "// ラベル付きタプル（読みやすい）",
+     "const entry: [name: string, qty: number] = [\"blueberry\", 12];"
+   ])}]},
+   {n:"WHY", title:"any・unknown・never の違い", tiers:{
+     def:"any は型チェックを切る“逃げ道”。unknown は“安全なany”で、使う前に型を絞り込む必要がある。never は“決して起きない値”。",
+     analogy:"any=中身を見ずに何でも詰める箱（危険）。unknown=封をした箱、開ける前に中身を確かめる。never=空の箱すら存在しない状態。",
+     detail:"外部入力やJSON.parseの結果は any にしがちだが、unknown にして型ガードで確認するのが安全。never は網羅チェック（switchで全ケースを処理したか）に使う。",
+     summary:"困ったら any ではなく unknown。安全はちょっとの手間で買える。"
+   }, code:[{fn:"any_unknown.ts", body:C([
+     "let x: any = 5;",
+     "x.foo.bar;          // anyはエラーにならない＝危険",
+     "",
+     "let y: unknown = JSON.parse(\"123\");",
+     "// y.toFixed();      // ← これはエラー（まず絞り込め、と言われる）",
+     "if (typeof y === \"number\") {",
+     "  console.log(y.toFixed(1)); // ここでは number として安全",
+     "}"
+   ])}]}
+  ],
+  callouts:[
+   {k:"warn", html:"<b>any は最後の手段。</b>付けた瞬間、その先のミスをTSは見逃します。「とりあえず any」ではなく「まず unknown→絞り込み」を癖に。"}
+  ],
+  practice:[
+   {type:"mc", id:"types-q1", q:"<code>let a = 10;</code> と書いたとき、a の型は？",
+    choices:["any","number","10（リテラル型）","unknown"], answer:1,
+    explain:"<code>let</code> で初期化すると、リテラルより広い型に推論されます。ここでは <b>number</b>。<code>const a = 10</code> なら <b>10</b> というリテラル型になります。"},
+   {type:"mc", id:"types-q2", q:"外部から来た値（中身不明）を安全に扱いたい。最初に付ける型は？",
+    choices:["any","unknown","never","object"], answer:1,
+    explain:"<b>unknown</b> にすると、使う前に <code>typeof</code> などで絞り込みを強制されます。any は検査を切ってしまうので非推奨。"},
+   {type:"input", id:"types-q3", q:"「numberの配列」を表す型を2通りのうち、角カッコを使う書き方で。（例：____[]）",
+    accept:["number[]"], placeholder:"____[]",
+    explain:"<code>number[]</code>（または <code>Array&lt;number&gt;</code>）。どちらも同じ意味です。"},
+   {type:"bug", id:"types-b1", tag:"型", title:"タプルの個数ミス",
+    buggy:C(["const point: [number, number] = [35, 139, 0];","// Error: 要素数が合わない"]),
+    hint:"タプルは“個数も”固定。",
+    fixed:C(["const point: [number, number] = [35, 139];","// 3つ持たせたいなら型側も [number, number, number] に"]),
+    explain:"タプルは要素の<b>個数と順番</b>まで型の一部。データに合わせて型を [number,number,number] にするか、配列 number[] にします。"}
+  ]
+ },
+
+ {
+  id:"objects", ico:"📦", nav:"オブジェクト / interface / type",
+  kicker:"CH.03", title:"オブジェクトの型 — interface と type", sub:"形を決める・省略可・読み取り専用・使い分け",
+  lessons:[
+   {n:"WHAT", title:"オブジェクトの形を型にする", tiers:{
+     def:"オブジェクトの“形（どのキーがどの型か）”を、interface か type alias で名前を付けて再利用する。",
+     analogy:"出荷伝票のフォーマットを1枚決めて、全部の箱で同じ伝票を使う感じ。",
+     detail:"? を付ければ省略可能プロパティ、readonly を付ければ再代入禁止。形が同じなら interface でも type でも書ける。",
+     summary:"形に名前を付けると、補完が効き、変更にも強くなる。"
+   }, code:[{fn:"object_types.ts", body:C([
+     "interface Farm {",
+     "  name: string;",
+     "  acres: number;",
+     "  organic?: boolean;        // 省略可能",
+     "  readonly id: string;      // 読み取り専用",
+     "}",
+     "",
+     "const f: Farm = { name: \"うさうさ農園\", acres: 3, id: \"F-001\" };",
+     "// f.id = \"F-002\";  // ← readonly なのでエラー"
+   ])}]},
+   {n:"WHY", title:"interface と type、どっち？", tiers:{
+     def:"オブジェクトの形だけなら、どちらでもよい。拡張や宣言マージが要るなら interface、union/タプル/関数型など柔軟さが要るなら type。",
+     analogy:"interfaceは“継ぎ足せる台帳”、typeは“なんでも書ける付箋”。",
+     detail:"interface は extends で拡張でき、同名宣言が自動マージされる（ライブラリの型拡張で有用）。type は union（A | B）やタプル、複雑な型計算が書ける。実務では「オブジェクトはinterface、それ以外はtype」と決めるチームも多い。",
+     summary:"迷ったら：形＝interface、組み合わせ＝type。チームの規約に合わせる。"
+   }, code:[{fn:"interface_vs_type.ts", body:C([
+     "// interface は extends で拡張",
+     "interface Plant { name: string; }",
+     "interface Berry extends Plant { sweetness: number; }",
+     "",
+     "// type は union やタプルが得意",
+     "type Sort = \"asc\" | \"desc\";",
+     "type Pair = [number, number];",
+     "type ID = string | number;"
+   ])}]}
+  ],
+  practice:[
+   {type:"mc", id:"obj-q1", q:"プロパティを“あってもなくてもよい”にする記号は？",
+    choices:["!","?","readonly","| undefined"], answer:1,
+    explain:"<code>name?: string</code> のように <b>?</b> を付けると省略可能（optional）になります。"},
+   {type:"mc", id:"obj-q2", q:"<code>\"asc\" | \"desc\"</code> のような union 型を名前付きで定義するのに向くのは？",
+    choices:["interface","type alias","class","enum だけ"], answer:1,
+    explain:"union は <b>type</b> で書きます（interfaceはオブジェクトの形向き）。enumでも近いことはできますが、リテラルunionの方が軽量で実務でよく使われます。"},
+   {type:"bug", id:"obj-b1", tag:"型", title:"readonly に再代入",
+    buggy:C(["interface User { readonly id: number; name: string; }","const u: User = { id: 1, name: \"usa\" };","u.id = 2;  // Error"]),
+    hint:"readonly は後から変えられない。",
+    fixed:C(["interface User { readonly id: number; name: string; }","let u: User = { id: 1, name: \"usa\" };","// id を変えたいなら新しいオブジェクトを作る","u = { ...u, id: 2 };"]),
+    explain:"<code>readonly</code> は再代入を禁止します。値を“変える”のではなく、<b>スプレッドで新しいオブジェクトを作る</b>のが定石です。"}
+  ]
+ },
+
+ {
+  id:"union", ico:"🔀", nav:"Union / リテラル / 絞り込み",
+  kicker:"CH.04", title:"Union・リテラル型・絞り込み(narrowing)", sub:"「複数あり得る型」を安全に1つに確定させる",
+  lessons:[
+   {n:"WHAT", title:"Union とリテラル型", tiers:{
+     def:"Union（A | B）は「AかBのどちらか」。リテラル型は \"asc\" のような“ちょうどその値”を型にしたもの。",
+     analogy:"「青か紫の実」（union）と、「“完熟”という札しか貼れない」（リテラル）。",
+     detail:"リテラルのunionは、限られた選択肢を型で表現できる（タイプミスをコンパイルで弾ける）。enumの軽量版としてよく使う。",
+     summary:"選択肢を型にすると、許されない値が書けなくなる。"
+   }, code:[{fn:"union_literal.ts", body:C([
+     "type Status = \"draft\" | \"review\" | \"done\";",
+     "let s: Status = \"review\";",
+     "// s = \"reviw\";  // ← タイプミスをコンパイルで検出",
+     "",
+     "type Id = string | number;",
+     "function show(id: Id) { console.log(id); }"
+   ])}]},
+   {n:"HOW", title:"絞り込み（narrowing）と型ガード", tiers:{
+     def:"unionの値を、typeof / in / instanceof などで“どちらか一方”に確定させること。",
+     analogy:"カゴの中身を手に取って「これは青、こっちは紫」と仕分けてから扱う。",
+     detail:"if の中でチェックすると、その分岐内ではTSが型を絞ってくれる。タグ付きunion（共通のkindプロパティ）を使うと、switchで安全に網羅できる。",
+     summary:"使う前に仕分ける。仕分けた先では、TSが正しい型を保証してくれる。"
+   }, code:[{fn:"narrowing.ts", body:C([
+     "function format(id: string | number): string {",
+     "  if (typeof id === \"number\") {",
+     "    return id.toFixed(0);   // ここでは number",
+     "  }",
+     "  return id.toUpperCase();  // ここでは string",
+     "}",
+     "",
+     "// タグ付きunion（discriminated union）",
+     "type Shape =",
+     "  | { kind: \"circle\"; r: number }",
+     "  | { kind: \"square\"; side: number };",
+     "",
+     "function area(sh: Shape): number {",
+     "  switch (sh.kind) {",
+     "    case \"circle\": return Math.PI * sh.r * sh.r;",
+     "    case \"square\": return sh.side * sh.side;",
+     "  }",
+     "}"
+   ])}]}
+  ],
+  practice:[
+   {type:"mc", id:"union-q1", q:"<code>id: string | number</code> を受け取り、number のときだけ <code>.toFixed()</code> を呼びたい。正しい絞り込みは？",
+    choices:["if (id === number)","if (typeof id === \"number\")","if (id instanceof number)","if (id: number)"], answer:1,
+    explain:"プリミティブは <code>typeof id === \"number\"</code> で絞り込みます。instanceof はクラス（オブジェクト）向けです。"},
+   {type:"input", id:"union-q2", q:"draft/review/done の3択だけを許す型を type で。 type Status = ____ の中身（\"draft\"を含む union）を書いて。",
+    accept:['"draft" | "review" | "done"','"draft"|"review"|"done"',"'draft' | 'review' | 'done'","'draft'|'review'|'done'"],
+    placeholder:'"draft" | "review" | "done"',
+    explain:"リテラルのunion <code>\"draft\" | \"review\" | \"done\"</code> で、3つ以外を弾けます。"},
+   {type:"bug", id:"union-b1", tag:"型", title:"絞り込み忘れ",
+    buggy:C(["function len(v: string | string[]) {","  return v.length; // どちらにも length はあるが…","}","function up(v: string | string[]) {","  return v.toUpperCase(); // Error: 配列に toUpperCase は無い","}"]),
+    hint:"配列か文字列かを先に判定。",
+    fixed:C(["function up(v: string | string[]) {","  if (Array.isArray(v)) {","    return v.map(s => s.toUpperCase());","  }","  return v.toUpperCase();","}"]),
+    explain:"配列専用メソッドを使う前に <code>Array.isArray()</code> で絞り込みます。絞り込んだ分岐内では、TSが型を確定してくれます。"}
+  ]
+ },
+
+ {
+  id:"functions", ico:"🧮", nav:"関数",
+  kicker:"CH.05", title:"関数 — 引数・戻り値・関数型", sub:"省略可/デフォルト/可変長と、関数そのものの型",
+  lessons:[
+   {n:"WHAT", title:"引数と戻り値の型", tiers:{
+     def:"引数には型注釈を付ける。戻り値は推論されるが、公開関数では明示すると安全。",
+     analogy:"レシピの材料（引数の型）と出来上がり（戻り値の型）を先に決めておく感じ。",
+     detail:"省略可能は ?、初期値は = 値、可変長は ...rest。戻り値がないなら void。",
+     summary:"入口（引数）と出口（戻り）を型で固定すると、誤用が減る。"
+   }, code:[{fn:"functions.ts", body:C([
+     "// 通常 / 省略可能 / デフォルト",
+     "function greet(name: string, suffix?: string): string {",
+     "  return name + (suffix ?? \"さん\");",
+     "}",
+     "",
+     "function pow(base: number, exp: number = 2): number {",
+     "  return base ** exp;",
+     "}",
+     "",
+     "// 可変長（rest）",
+     "function sum(...nums: number[]): number {",
+     "  return nums.reduce((a, b) => a + b, 0);",
+     "}",
+     "",
+     "// 戻り値なし",
+     "function log(msg: string): void {",
+     "  console.log(msg);",
+     "}"
+   ])}]},
+   {n:"WHAT", title:"関数そのものの型", tiers:{
+     def:"「(引数: 型) => 戻り型」で“関数の型”を書ける。コールバックや変数に関数を入れるとき便利。",
+     analogy:"作業手順そのものを“型”として渡す。中身は後で差し替えられる。",
+     detail:"高階関数（関数を受け取る/返す）の引数に型を付けると、コールバックの引数まで補完が効く。",
+     summary:"関数も値。値である以上、型を付けられる。"
+   }, code:[{fn:"function_type.ts", body:C([
+     "// 関数型の別名",
+     "type Mapper = (x: number) => number;",
+     "const double: Mapper = (x) => x * 2;",
+     "",
+     "// コールバックを受け取る関数",
+     "function apply(arr: number[], fn: (x: number) => number): number[] {",
+     "  return arr.map(fn);",
+     "}",
+     "apply([1, 2, 3], double); // [2, 4, 6]"
+   ])}]}
+  ],
+  practice:[
+   {type:"mc", id:"fn-q1", q:"「戻り値が無い」関数の戻り型は？",
+    choices:["null","never","void","undefined だけ"], answer:2,
+    explain:"値を返さない関数の戻り型は <b>void</b> です。<b>never</b> は“決して正常終了しない”（必ず例外を投げる/無限ループ）関数に使います。"},
+   {type:"input", id:"fn-q2", q:"<code>(x: number) =&gt; number</code> 型の別名 Mapper を定義する右辺を書いて：type Mapper = ____",
+    accept:["(x: number) => number","(x:number)=>number"], placeholder:"(x: number) => number",
+    explain:"関数型は <code>(引数: 型) =&gt; 戻り型</code> の形。コールバックの型指定でよく使います。"},
+   {type:"bug", id:"fn-b1", tag:"型", title:"省略可能引数の使い忘れ",
+    buggy:C(["function tax(price: number, rate?: number): number {","  return price * (1 + rate); // rate が undefined かも → Error / NaN","}"]),
+    hint:"rate は省略可能 = undefined になりうる。",
+    fixed:C(["function tax(price: number, rate: number = 0.1): number {","  return price * (1 + rate);","}","// もしくは ?? でデフォルト値を補う：","// const r = rate ?? 0.1;"]),
+    explain:"省略可能引数(?)は <code>undefined</code> になり得ます。<b>デフォルト値</b>（= 0.1）か <code>?? 0.1</code> で必ず値を確定させましょう。"}
+  ]
+ },
+
+ {grp:"中級"},
+ {
+  id:"generics", ico:"🧬", nav:"ジェネリクス",
+  kicker:"CH.06", title:"ジェネリクス — 型を“引数”にする", sub:"再利用できて、型の情報も失わない部品の作り方",
+  lessons:[
+   {n:"WHY", title:"なぜジェネリクスか", tiers:{
+     def:"処理は同じだが扱う型が違うとき、型を“あとから渡せる変数（T）”にして1つの部品で済ませる仕組み。",
+     analogy:"同じ形のカゴを、ブルーベリー用にもイチゴ用にも使う。中身の種類はラベル(T)で後から決める。",
+     detail:"any で書くと型情報が失われるが、ジェネリクスなら入れた型がそのまま出てくる。配列・Promise・ユーティリティ型は全部ジェネリクスでできている。",
+     summary:"any との違いは“型を覚えていること”。それがジェネリクスの価値。"
+   }, code:[{fn:"generics.ts", body:C([
+     "// T は呼び出し時に決まる型変数",
+     "function identity<T>(value: T): T {",
+     "  return value;",
+     "}",
+     "const a = identity<string>(\"berry\"); // a: string",
+     "const b = identity(123);              // 推論で b: number",
+     "",
+     "// 先頭要素を返す（配列の中身の型を保つ）",
+     "function first<T>(arr: T[]): T | undefined {",
+     "  return arr[0];",
+     "}"
+   ])}]},
+   {n:"HOW", title:"制約（extends）で“できること”を絞る", tiers:{
+     def:"T extends 〇〇 と書くと、「〇〇を満たす型しか入れられない」と制約できる。",
+     analogy:"「ヘタが付いた実だけ」とカゴに条件を付ける。条件があるから安心して扱える。",
+     detail:"制約を付けると、その性質（プロパティ）を関数内で安全に使える。keyof と組み合わせると“存在するキーだけ”を受け取る関数が書ける。",
+     summary:"制約は“縛り”ではなく“安全に使える保証”。"
+   }, code:[{fn:"constraints.ts", body:C([
+     "// id を持つ型だけ受け取る",
+     "function getId<T extends { id: number }>(item: T): number {",
+     "  return item.id;",
+     "}",
+     "getId({ id: 7, name: \"usa\" }); // OK",
+     "// getId({ name: \"usa\" });     // Error: id が無い",
+     "",
+     "// オブジェクトの“存在するキー”だけ受け取る",
+     "function pluck<T, K extends keyof T>(obj: T, key: K): T[K] {",
+     "  return obj[key];",
+     "}",
+     "pluck({ a: 1, b: \"x\" }, \"b\"); // 戻り型は string"
+   ])}]}
+  ],
+  practice:[
+   {type:"mc", id:"gen-q1", q:"ジェネリクス <code>identity&lt;T&gt;</code> が <code>any</code> より優れる点は？",
+    choices:["速く動く","入れた型をそのまま返す（型情報を保つ）","コンパイルが不要になる","実行時に型チェックする"], answer:1,
+    explain:"any は型情報を捨てますが、ジェネリクスは<b>渡した型をそのまま保持</b>します。だから戻り値も正しい型で補完が効きます。"},
+   {type:"input", id:"gen-q2", q:"「id: number を持つ型だけ」受け取る制約は？ function f&lt;T extends ____&gt;(x: T){}",
+    accept:["{ id: number }","{id: number}","{ id:number }","{id:number}"], placeholder:"{ id: number }",
+    explain:"<code>T extends { id: number }</code> と書くと、id を持つ型だけに限定でき、関数内で <code>x.id</code> を安全に使えます。"},
+   {type:"bug", id:"gen-b1", tag:"型", title:"any に逃げて型が消える",
+    buggy:C(["function first(arr: any[]): any {","  return arr[0];","}","const x = first([1, 2, 3]);","x.toUpperCase(); // 実行時エラーをTSが防げない"]),
+    hint:"any[] だと中身の型が消える。",
+    fixed:C(["function first<T>(arr: T[]): T | undefined {","  return arr[0];","}","const x = first([1, 2, 3]); // x: number | undefined","// x.toUpperCase(); // ← ここでちゃんとエラーになる"]),
+    explain:"<code>any[]</code> は中身の型を失います。<b>ジェネリクス &lt;T&gt;</b> にすると number だと分かり、誤った <code>.toUpperCase()</code> をコンパイル時に弾けます。"}
+  ]
+ },
+
+ {
+  id:"classes", ico:"🏛️", nav:"クラス",
+  kicker:"CH.07", title:"クラス — アクセス修飾子と実装", sub:"public/private/protected・implements・abstract",
+  lessons:[
+   {n:"WHAT", title:"クラスとアクセス修飾子", tiers:{
+     def:"クラスはデータ＋振る舞いの設計図。public/private/protected/readonly で見せる範囲を制御する。",
+     analogy:"農園の建物。受付（public）は誰でも、倉庫（private）は中の人だけ、系列店（protected）は身内だけ。",
+     detail:"private はクラス外から触れない。コンストラクタ引数に修飾子を付けると、フィールド宣言＋代入を省略できる（パラメータプロパティ）。",
+     summary:"見せる範囲を型で固定し、内部実装を守る。"
+   }, code:[{fn:"classes.ts", body:C([
+     "class Farm {",
+     "  // パラメータプロパティ：宣言と代入をまとめて行う",
+     "  constructor(",
+     "    public name: string,",
+     "    private acres: number,",
+     "    readonly id: string,",
+     "  ) {}",
+     "",
+     "  describe(): string {",
+     "    return this.name + \" (\" + this.acres + \"acres)\";",
+     "  }",
+     "}",
+     "const f = new Farm(\"うさうさ農園\", 3, \"F-001\");",
+     "f.name;      // OK (public)",
+     "// f.acres;  // Error (private)"
+   ])}]},
+   {n:"HOW", title:"implements と abstract", tiers:{
+     def:"implements は「このinterfaceの形を満たす」とクラスに約束させる。abstract は“直接インスタンス化できない土台クラス”。",
+     analogy:"implementsは“認証マーク”、abstractは“ひな形の親レシピ（そのままは作れない）”。",
+     detail:"abstractメソッドは子クラスで必ず実装させられる。共通部分を親に、違う部分を子に置く設計に向く。",
+     summary:"形の約束＝implements、共通の土台＝abstract。"
+   }, code:[{fn:"abstract.ts", body:C([
+     "interface Describable { describe(): string; }",
+     "",
+     "abstract class Plant implements Describable {",
+     "  constructor(protected name: string) {}",
+     "  abstract describe(): string; // 子で必ず実装",
+     "}",
+     "",
+     "class Berry extends Plant {",
+     "  describe(): string {",
+     "    return this.name + \" は実です\";",
+     "  }",
+     "}",
+     "// new Plant(\"x\"); // Error: abstract は直接作れない",
+     "new Berry(\"ブルーベリー\").describe();"
+   ])}]}
+  ],
+  practice:[
+   {type:"mc", id:"cls-q1", q:"クラスの外から触れなくしたいフィールドに付ける修飾子は？",
+    choices:["public","private","readonly","export"], answer:1,
+    explain:"<b>private</b> はクラス外からアクセス不可。<b>protected</b> は自分＋継承先からのみ、<b>readonly</b> は再代入不可（読み取りは可）です。"},
+   {type:"mc", id:"cls-q2", q:"<code>abstract class</code> の特徴は？",
+    choices:["どこからでも new できる","直接 new できず、継承して使う","privateと同じ意味","型を持たない"], answer:1,
+    explain:"abstract クラスは<b>直接インスタンス化できず</b>、継承先で abstract メンバーを実装して使います。"},
+   {type:"bug", id:"cls-b1", tag:"型", title:"private に外からアクセス",
+    buggy:C(["class Counter {","  private count = 0;","  inc() { this.count++; }","}","const c = new Counter();","c.count = 100; // Error: private"]),
+    hint:"private は外から書き換えられない。",
+    fixed:C(["class Counter {","  private count = 0;","  inc() { this.count++; }","  get value() { return this.count; }","}","const c = new Counter();","c.inc();","console.log(c.value); // 公開用のgetter経由で読む"]),
+    explain:"private を外から触るのではなく、<b>メソッドやgetterという“公式の窓口”</b>を用意します。内部状態を守りつつ必要な操作だけ公開するのが定石です。"}
+  ]
+ },
+
+ {
+  id:"advanced", ico:"🧠", nav:"高度な型 / ユーティリティ型",
+  kicker:"CH.08", title:"高度な型 — keyof・typeof・ユーティリティ型", sub:"既存の型から、新しい型を“計算”して作る",
+  lessons:[
+   {n:"WHAT", title:"keyof・typeof・インデックスアクセス", tiers:{
+     def:"keyof T は「Tのキー名の union」。typeof obj は値から型を取り出す。T[K] はプロパティの型を取り出す。",
+     analogy:"伝票(T)の“見出しの一覧”(keyof)、現物から型を起こす(typeof)、見出しを指して中身の型を取る(T[K])。",
+     detail:"これらを組み合わせると、“存在するキーしか渡せない”安全なアクセサが書ける（CH.06の pluck がその例）。",
+     summary:"型は手で全部書かない。既存から“導出”する。"
+   }, code:[{fn:"keyof_typeof.ts", body:C([
+     "const config = { host: \"localhost\", port: 5432, ssl: true };",
+     "type Config = typeof config;        // { host: string; port: number; ssl: boolean }",
+     "type Keys = keyof Config;            // \"host\" | \"port\" | \"ssl\"",
+     "type PortType = Config[\"port\"];     // number"
+   ])}]},
+   {n:"HOW", title:"ユーティリティ型で“形を変える”", tiers:{
+     def:"標準で用意された型変換。Partial / Required / Readonly / Pick / Omit / Record / ReturnType / Awaited など。",
+     analogy:"既製の“型加工マシン”。元の伝票から、必須を任意に、一部だけ抜き出す等の加工を一発で。",
+     detail:"更新用の型は Partial<T>、一部だけ選ぶなら Pick/Omit、辞書は Record<K,V>、関数の戻り型は ReturnType、Promiseの中身は Awaited。",
+     summary:"よくある変換は手書きせず、ユーティリティ型に任せる。"
+   }, code:[{fn:"utility_types.ts", body:C([
+     "interface User { id: number; name: string; email: string; }",
+     "",
+     "type Draft = Partial<User>;          // 全部 optional（更新用）",
+     "type Public = Omit<User, \"email\">;  // email を除いた型",
+     "type NameOnly = Pick<User, \"name\">; // name だけ",
+     "type Dict = Record<string, number>;  // { [k: string]: number }",
+     "",
+     "function load(): User { return { id: 1, name: \"u\", email: \"a@b\" }; }",
+     "type Loaded = ReturnType<typeof load>;      // User",
+     "type Got = Awaited<Promise<number>>;        // number"
+   ])}]}
+  ],
+  practice:[
+   {type:"mc", id:"adv-q1", q:"<code>keyof { a: 1; b: 2 }</code> の結果は？",
+    choices:['"a" | "b"',"1 | 2","{ a: 1; b: 2 }","string"], answer:0,
+    explain:"keyof は<b>キー名のunion</b>を作るので <code>\"a\" | \"b\"</code> です。"},
+   {type:"input", id:"adv-q2", q:"User型の全プロパティを“省略可能”にした更新用の型を、ユーティリティ型1つで。 type Draft = ____&lt;User&gt;",
+    accept:["Partial"], placeholder:"Partial",
+    explain:"<code>Partial&lt;User&gt;</code> で全プロパティが optional になり、部分更新の型として便利です。逆に全必須化は <code>Required&lt;T&gt;</code>。"},
+   {type:"bug", id:"adv-b1", tag:"型", title:"手書きで二重管理",
+    buggy:C(["interface User { id: number; name: string; email: string; }","// 更新用に“もう一個”手で書いてしまう（ズレの温床）","interface UserPatch { id?: number; name?: string; email?: string; }"]),
+    hint:"同じ形を2回書かない。",
+    fixed:C(["interface User { id: number; name: string; email: string; }","type UserPatch = Partial<User>; // User が変わっても自動で追従"]),
+    explain:"同じ形を手で2回書くと、片方の修正漏れでバグになります。<b>Partial&lt;User&gt;</b> なら元の型に自動追従し、二重管理を避けられます。"}
+  ]
+ },
+
+ {
+  id:"async", ico:"⏳", nav:"非同期 (Promise/async)",
+  kicker:"CH.09", title:"非同期処理 — Promise と async/await", sub:"時間のかかる処理を、型を保ったまま安全に待つ",
+  lessons:[
+   {n:"WHAT", title:"Promise と async/await", tiers:{
+     def:"Promise<T> は「あとで T が得られる約束」。async関数は必ず Promise を返し、await でその結果を待つ。",
+     analogy:"実が熟すのを待つ予約札（Promise）。await は「熟したら受け取る」合図。",
+     detail:"await の結果は中身の型(T)になる。失敗は throw され、try/catch で受ける。catch の値は unknown（型を絞ってから使う）。",
+     summary:"型付きの“待つ”。awaitすれば中身の型がそのまま手に入る。"
+   }, code:[{fn:"async.ts", body:C([
+     "interface Berry { id: number; name: string; }",
+     "",
+     "async function fetchBerry(id: number): Promise<Berry> {",
+     "  const res = await fetch(\"/api/berry/\" + id);",
+     "  if (!res.ok) throw new Error(\"not found\");",
+     "  return (await res.json()) as Berry;",
+     "}",
+     "",
+     "async function main(): Promise<void> {",
+     "  try {",
+     "    const b = await fetchBerry(1); // b: Berry",
+     "    console.log(b.name);",
+     "  } catch (e: unknown) {",
+     "    if (e instanceof Error) console.error(e.message);",
+     "  }",
+     "}"
+   ])}]},
+   {n:"HOW", title:"並行に待つ：Promise.all", tiers:{
+     def:"複数の非同期を同時に走らせて、すべて揃うのを待つ。順番待ちより速い。",
+     analogy:"3つの畝を順に回るのではなく、3人で同時に摘んで最後に合流する。",
+     detail:"Promise.all は、配列の各要素の型を保ったタプル型を返す。1つでも失敗すると全体が reject される点に注意。",
+     summary:"独立した待ちは all でまとめて。速くなり、型も保たれる。"
+   }, code:[{fn:"promise_all.ts", body:C([
+     "async function loadAll(): Promise<void> {",
+     "  const [a, b, c] = await Promise.all([",
+     "    fetchBerry(1),",
+     "    fetchBerry(2),",
+     "    fetchBerry(3),",
+     "  ]); // a,b,c はそれぞれ Berry 型",
+     "  console.log(a.name, b.name, c.name);",
+     "}"
+   ])}]}
+  ],
+  practice:[
+   {type:"mc", id:"async-q1", q:"async 関数の戻り型は必ず？",
+    choices:["void","T そのもの","Promise でラップされる","never"], answer:2,
+    explain:"async 関数は必ず <b>Promise&lt;...&gt;</b> を返します。<code>return 5</code> でも戻り型は <code>Promise&lt;number&gt;</code> です。"},
+   {type:"mc", id:"async-q2", q:"<code>catch (e)</code> の e の型（strict設定）は？",
+    choices:["any","Error","unknown","string"], answer:2,
+    explain:"近年のTSでは catch の値は <b>unknown</b>。<code>e instanceof Error</code> 等で絞ってから使うのが安全です。"},
+   {type:"bug", id:"async-b1", tag:"非同期", title:"await し忘れ",
+    buggy:C(["async function getName(id: number) {","  const b = fetchBerry(id);  // await を忘れた","  return b.name;  // Error: Promise に .name は無い","}"]),
+    hint:"中身を使う前に await。",
+    fixed:C(["async function getName(id: number): Promise<string> {","  const b = await fetchBerry(id); // 待ってから使う","  return b.name;","}"]),
+    explain:"await を忘れると <code>b</code> は <b>Promise&lt;Berry&gt;</b> のまま。<code>.name</code> は無いのでエラーです。中身を使う前に必ず await を。"}
+  ]
+ },
+
+ {grp:"実務へ"},
+ {
+  id:"test", ico:"🧪", nav:"テスト",
+  kicker:"CH.10", title:"テスト — なぜ書く / どう書く", sub:"Vitest の基礎と、“コンパイルが通ること”という型のテスト",
+  lessons:[
+   {n:"WHY", title:"テストは“学習”でもある", tiers:{
+     def:"テストは正しさの保証であると同時に、自分の理解を試す行為。テスト(=思い出して答える)こと自体が記憶を強める。",
+     analogy:"摘んだ実を“味見”して初めて、甘いか酸っぱいか体で覚える。",
+     detail:"「テストすると学習が強化される（testing effect / retrieval practice）」は学習科学で繰り返し確認されている（章末 出典[1][2]）。コードのテストも、仕様を“思い出して書き下す”練習になる。",
+     summary:"テストは品質保証＋学習。書くほど、コードも記憶も強くなる。"
+   }},
+   {n:"HOW", title:"Vitest で最初のテスト", tiers:{
+     def:"小さな純粋関数を作り、入力→期待出力を expect で確認する。",
+     analogy:"レシピ通りに作って“見本の味”と一致するか確かめる。",
+     detail:"純粋関数（同じ入力なら同じ出力・副作用なし）はテストが楽。まずそこから。エッジケース（空配列・0・境界値）を1つ足すと質が上がる。",
+     summary:"純粋関数 × 期待値の比較から。エッジを1つ足すと“効く”テストに。"
+   }, code:[
+     {fn:"sum.ts", body:C([
+       "export function sum(nums: number[]): number {",
+       "  return nums.reduce((a, b) => a + b, 0);",
+       "}"
+     ])},
+     {fn:"sum.test.ts", body:C([
+       "import { describe, it, expect } from \"vitest\";",
+       "import { sum } from \"./sum\";",
+       "",
+       "describe(\"sum\", () => {",
+       "  it(\"数値を合計する\", () => {",
+       "    expect(sum([1, 2, 3])).toBe(6);",
+       "  });",
+       "  it(\"空配列は 0\", () => {  // エッジケース",
+       "    expect(sum([])).toBe(0);",
+       "  });",
+       "});"
+     ])},
+     {fn:"ターミナル", body:C([
+       "npm install -D vitest",
+       "npx vitest run"
+     ])}
+   ]},
+   {n:"WHAT", title:"“型のテスト”という考え方", tiers:{
+     def:"TSでは「コンパイルが通ること」自体が一種のテスト。わざと通らないことを確認する @ts-expect-error も使える。",
+     analogy:"検品ゲートを通れた＝規格に合っている、という保証。",
+     detail:"想定外の使い方をしたとき“ちゃんとエラーになる”ことを @ts-expect-error で固定できる。型の退行（うっかり any 化）を防ぐ。",
+     summary:"通るべきは通り、弾くべきは弾く。型の振る舞いも“テスト”できる。"
+   }, code:[{fn:"type_test.ts", body:C([
+     "function toUpper(s: string): string { return s.toUpperCase(); }",
+     "",
+     "toUpper(\"ok\"); // 通る",
+     "",
+     "// @ts-expect-error 数値は渡せないはず（弾けることをテスト）",
+     "toUpper(123);"
+   ])}]}
+  ],
+  practice:[
+   {type:"mc", id:"test-q1", q:"最もテストしやすいのは？",
+    choices:["乱数や現在時刻に依存する関数","グローバル変数を書き換える関数","純粋関数（同じ入力→同じ出力）","UIを直接操作する関数"], answer:2,
+    explain:"<b>純粋関数</b>は副作用がなく、入力→期待出力を比べるだけ。まずここからテストを始めると効果的です。"},
+   {type:"input", id:"test-q2", q:"Vitest で『sum([1,2,3]) が 6 になる』ことを確認する式： expect(sum([1,2,3])).____(6)",
+    accept:["toBe","toEqual"], placeholder:"toBe",
+    explain:"数値など基本値は <code>.toBe(6)</code>。オブジェクトや配列の中身比較は <code>.toEqual(...)</code> を使います。"}
+  ]
+ },
+
+ {
+  id:"bugfix", ico:"🩹", nav:"バグ修正道場",
+  kicker:"CH.11", title:"バグ修正道場 — よくあるTSエラー", sub:"エラーコードを“読めれば”半分は直ったも同然",
+  lessons:[
+   {n:"HOW", title:"エラーメッセージの読み方", tiers:{
+     def:"TSのエラーは「TS番号 + 何が・どこで・なぜ」を必ず教えてくれる。番号より本文を読む。",
+     analogy:"病院の検査結果。番号より“どこが・どう悪いか”が大事。",
+     detail:"代表例：TS2322（型を代入できない）、TS2345（引数の型が違う）、TS2532/18048（null/undefinedかも）。VSCodeなら該当箇所にカーソルで全文が出る。",
+     summary:"番号で検索する前に、本文を最後まで読む。答えはたいてい書いてある。"
+   }}
+  ],
+  practice:[
+   {type:"bug", id:"bug-1", tag:"TS2322", title:"型を代入できない（TS2322）",
+    buggy:C(["let count: number = \"3\";","// TS2322: Type 'string' is not assignable to type 'number'."]),
+    hint:"文字列を数値に入れている。",
+    fixed:C(["let count: number = 3;","// もし文字列から来るなら明示的に変換：","let n: number = Number(\"3\");"]),
+    explain:"代入する値の型が宣言と違うと TS2322。<b>正しい型の値を入れる</b>か、<code>Number()</code> 等で<b>明示的に変換</b>します。"},
+   {type:"bug", id:"bug-2", tag:"TS2345", title:"引数の型が違う（TS2345）",
+    buggy:C(["function repeat(s: string, n: number): string {","  return s.repeat(n);","}","repeat(\"ab\", \"3\");","// TS2345: Argument of type 'string' is not assignable to parameter of type 'number'."]),
+    hint:"第2引数は number のはず。",
+    fixed:C(["repeat(\"ab\", 3);","// 文字列でしか得られないなら変換：","repeat(\"ab\", Number(\"3\"));"]),
+    explain:"渡した引数の型が定義と違うと TS2345。数値リテラルを渡すか、<code>Number()</code> で変換してから渡します。"},
+   {type:"bug", id:"bug-3", tag:"TS18048", title:"undefined かもしれない（TS18048）",
+    buggy:C(["interface User { name?: string; }","function hello(u: User): string {","  return u.name.toUpperCase();","  // TS18048: 'u.name' is possibly 'undefined'.","}"]),
+    hint:"name は省略可能（?）。",
+    fixed:C(["function hello(u: User): string {","  return (u.name ?? \"ゲスト\").toUpperCase();","  // または optional chaining：","  // return u.name?.toUpperCase() ?? \"ゲスト\";","}"]),
+    explain:"optional(?) や union に undefined が含まれると TS18048。<b>?? でデフォルト</b>、または <b>?. （optional chaining）</b>で安全に扱います。"},
+   {type:"bug", id:"bug-4", tag:"TS2532", title:"配列要素が undefined かも",
+    buggy:C(["const arr: number[] = [];","const head: number = arr[0];","head.toFixed(); // 実行時に undefined のことがある"]),
+    hint:"空配列なら arr[0] は undefined。",
+    fixed:C(["const arr: number[] = [];","const head = arr[0]; // number | undefined（noUncheckedIndexedAccess時）","if (head !== undefined) {","  head.toFixed();","}"]),
+    explain:"配列アクセスは存在保証がありません。tsconfig の <code>noUncheckedIndexedAccess</code> を有効にすると <code>number | undefined</code> になり、<b>存在チェック</b>を促してくれます。"}
+  ]
+ },
+
+ {
+  id:"drill", ico:"🌱", nav:"プチ問題集",
+  kicker:"CH.12", title:"プチ問題集 — 思い出して答える", sub:"間隔をあけて解き直すと、定着が段違い（出典[3]）",
+  lessons:[
+   {n:"WHY", title:"解き方のコツ", tiers:{
+     def:"答えを見る前に、まず自分の頭で予想してから確認する。これが“retrieval（想起）”。",
+     analogy:"札を見る前に、実の色で熟れ具合を当ててみる。外しても、当てようとした分だけ覚える。",
+     detail:"今日まとめて解くより、明日・3日後・1週間後と<b>間隔をあけて</b>解き直すと長期記憶に残りやすい（分散学習 / spacing、出典[3]）。",
+     summary:"まず予想→確認。そして“また日を置いて”解く。"
+   }}
+  ],
+  practice:[
+   {type:"input", id:"drill-1", q:"Q1. <code>const x = [1, 2, 3]</code>。x の型は？（____[] の形で）",
+    accept:["number[]"], placeholder:"number[]",
+    explain:"配列リテラルから <code>number[]</code> に推論されます。"},
+   {type:"mc", id:"drill-2", q:"Q2. <code>const s = \"done\" as const</code>。s の型は？",
+    choices:["string","\"done\"（リテラル型）","any","String"], answer:1,
+    explain:"<code>as const</code> を付けると、広い string ではなく<b>リテラル型 \"done\"</b>に固定されます。"},
+   {type:"mc", id:"drill-3", q:"Q3. <code>type A = { a: number } & { b: string }</code>。A は？",
+    choices:["a だけ持つ","b だけ持つ","a と b の両方を持つ（交差型）","エラー"], answer:2,
+    explain:"<code>&</code> は<b>交差型</b>。両方のプロパティを併せ持つ型になります（union <code>|</code> と対）。"},
+   {type:"input", id:"drill-4", q:"Q4. User型のうち email を除いた型を1行で。 type Pub = ____&lt;User, \"email\"&gt;",
+    accept:["Omit"], placeholder:"Omit",
+    explain:"<code>Omit&lt;User, \"email\"&gt;</code>。逆に“選ぶ”なら <code>Pick</code> です。"},
+   {type:"mc", id:"drill-5", q:"Q5. <code>function f(): never</code> はどんな関数？",
+    choices:["void を返す","必ず例外を投げる/終わらない","undefined を返す","anyを返す"], answer:1,
+    explain:"<b>never</b> は“正常に値を返して終わることが無い”関数の戻り型（throw や無限ループ）です。"},
+   {type:"input", id:"drill-6", q:"Q6. Promise&lt;number&gt; の中身の型を取り出すユーティリティ型は？",
+    accept:["Awaited","Awaited<Promise<number>>"], placeholder:"Awaited",
+    explain:"<code>Awaited&lt;Promise&lt;number&gt;&gt;</code> は <code>number</code>。async の結果型を扱うときに便利です。"}
+  ]
+ },
+
+ {
+  id:"ai", ico:"🤖", nav:"AI × TypeScript",
+  kicker:"CH.13", title:"AI × TypeScript の開発基礎", sub:"型付きでLLMを呼び、不確かな出力を“型で受け止める”",
+  lessons:[
+   {n:"WHY", title:"なぜ AI 開発に型が効くのか", tiers:{
+     def:"LLMの出力は“なんでもあり”になりがち。型を境界に置くと、アプリ側を壊れにくくできる。",
+     analogy:"よそから届いた素性不明の実を、検品ゲート（型＋検証）を通してから倉庫に入れる。",
+     detail:"APIのリクエスト/レスポンスを型で固定し、LLMが返すJSONは“信用しない前提”でランタイム検証（zod等）してから型に落とす。これが実務の堅牢パターン。",
+     summary:"AIの不確かさは、入口（型）と検問（検証）で受け止める。"
+   }},
+   {n:"HOW", title:"型付きで Anthropic API を呼ぶ", tiers:{
+     def:"公式SDK @anthropic-ai/sdk を使うと、リクエスト/レスポンスに型が付く。",
+     analogy:"型付きの注文票で発注すれば、品目の打ち間違いを発注時に弾ける。",
+     detail:"APIキーは環境変数から読む（コードに直書きしない）。モデル名は時期で変わるので、最新は公式ドキュメントで確認すること（嘘つかない原則：ここで特定の型番を断定しない）。",
+     summary:"SDKで型安全に。鍵は環境変数、モデル名は公式で最新確認。"
+   }, code:[{fn:"ai_call.ts", body:C([
+     "import Anthropic from \"@anthropic-ai/sdk\";",
+     "",
+     "const client = new Anthropic({",
+     "  apiKey: process.env.ANTHROPIC_API_KEY, // 鍵は環境変数から",
+     "});",
+     "",
+     "async function ask(prompt: string): Promise<string> {",
+     "  const msg = await client.messages.create({",
+     "    model: \"<最新のモデル名を公式docsで確認>\",",
+     "    max_tokens: 1024,",
+     "    messages: [{ role: \"user\", content: prompt }],",
+     "  });",
+     "  // content はブロックの配列。text ブロックだけ集める",
+     "  return msg.content",
+     "    .filter((b) => b.type === \"text\")",
+     "    .map((b) => (b as { text: string }).text)",
+     "    .join(\"\\n\");",
+     "}"
+   ])}]},
+   {n:"HOW", title:"LLMのJSON出力を zod で“検証してから型に”", tiers:{
+     def:"型注釈だけでは実行時は守られない（型は消える）。zod で実際の値を検証し、合格したものだけ型付きで使う。",
+     analogy:"伝票の形が合っていても、中身が腐っていないかは“実際に開けて”確かめる。",
+     detail:"スキーマを1つ書けば、ランタイム検証（parse）と静的型（infer）の両方が手に入る。LLM出力のように信用できない入力に最適。",
+     summary:"“型は実行時に消える”を埋めるのが zod。検証＝型の番人。"
+   }, code:[{fn:"ai_validate.ts", body:C([
+     "import { z } from \"zod\";",
+     "",
+     "// 期待する構造をスキーマで宣言",
+     "const ReviewSchema = z.object({",
+     "  score: z.number().min(0).max(100),",
+     "  summary: z.string(),",
+     "  tags: z.array(z.string()),",
+     "});",
+     "// スキーマから静的型を導出（手書き不要）",
+     "type Review = z.infer<typeof ReviewSchema>;",
+     "",
+     "function parseLLMOutput(raw: string): Review {",
+     "  const json: unknown = JSON.parse(raw); // まず unknown",
+     "  return ReviewSchema.parse(json); // 検証OKなら Review 型で返る",
+     "}"
+   ])}]}
+  ],
+  callouts:[
+   {k:"tip", html:"<b>うさうさ実務メモ：</b>「AI設計書レビュー」のような業務では、LLMの出力をそのまま信じず<b>zodで構造検証→型→後段処理</b>の順にすると、想定外フォーマットでアプリが落ちるのを防げます。型は“入口の契約”、zodは“その場の検問”。"},
+   {k:"warn", html:"<b>嘘つかない原則：</b>モデル名・SDKの細かい仕様・料金は更新されます。本ツールは断定せず<b>「公式ドキュメントで最新を確認」</b>と明記しています。"}
+  ],
+  practice:[
+   {type:"mc", id:"ai-q1", q:"LLMが返すJSONを安全に扱う、実務的な順番は？",
+    choices:["型注釈だけ付ければ実行時も安全","JSON.parse の結果をそのまま信じて使う","unknownで受け→zod等で検証→合格分だけ型で使う","any にして気にしない"], answer:2,
+    explain:"型は実行時に消えるので、<b>ランタイム検証</b>（zod等）が必要。unknownで受けて検証し、合格したものだけ型付きで使うのが堅牢です。"},
+   {type:"mc", id:"ai-q2", q:"APIキーの扱いとして正しいのは？",
+    choices:["ソースコードに直書きしてコミット","環境変数から読む","クライアントJSに埋め込む","コメントに書いておく"], answer:1,
+    explain:"鍵は<b>環境変数</b>から読み、リポジトリやクライアント側に出さないのが基本です。"},
+   {type:"input", id:"ai-q3", q:"zod スキーマから静的な型を導出するには？ type Review = z.____&lt;typeof ReviewSchema&gt;",
+    accept:["infer"], placeholder:"infer",
+    explain:"<code>z.infer&lt;typeof スキーマ&gt;</code> で、検証スキーマと型定義を<b>一元管理</b>できます。"}
+  ]
+ },
+
+ {grp:"文法ライブラリ"},
+ {
+  id:"lib-basic", ico:"📖", nav:"文法ライブラリ・基本",
+  kicker:"LIBRARY", title:"文法ライブラリ — 基本", sub:"よく使う基本文法を“逆引き”で。図解つき・公式ドキュメント準拠。",
+  callouts:[
+   {k:"tip", html:"<b>📘 出典：</b>TypeScript公式 Handbook「Everyday Types」。一次情報はこちら → <a href=\"https://www.typescriptlang.org/docs/handbook/2/everyday-types.html\" target=\"_blank\" rel=\"noopener noreferrer\">typescriptlang.org/docs/handbook/2/everyday-types.html</a>（参考リンクは公式のみ）"}
+  ],
+  figures:[
+   { title:"図解①　型注釈の読み方",
+     note:"「変数名 : 型 = 値」。コロンの右が“その変数が持てる値の約束”。型はコンパイル時のチェック専用で、実行時のコードからは消える。",
+     svg:`<svg viewBox="0 0 640 175" xmlns="http://www.w3.org/2000/svg">
+       <text x="20" y="32" font-size="15" fill="var(--berry)" font-weight="700" font-family="monospace">const price: number = 100;</text>
+       <rect x="40" y="52" width="84" height="40" rx="9" fill="var(--bloom-2)" stroke="var(--berry)"/>
+       <text x="82" y="77" font-size="14" text-anchor="middle" fill="var(--deep)" font-family="monospace">price</text>
+       <text x="82" y="116" font-size="12" text-anchor="middle" fill="var(--ink-soft)">変数名</text>
+       <rect x="150" y="52" width="138" height="40" rx="9" fill="var(--leaf-soft)" stroke="var(--leaf)"/>
+       <text x="219" y="77" font-size="14" text-anchor="middle" fill="var(--leaf-deep)" font-family="monospace">: number</text>
+       <text x="219" y="116" font-size="12" text-anchor="middle" fill="var(--ink-soft)">型＝持てる値の約束</text>
+       <rect x="314" y="52" width="100" height="40" rx="9" fill="var(--sun-soft)" stroke="var(--sun)"/>
+       <text x="364" y="77" font-size="14" text-anchor="middle" fill="#7A5A12" font-family="monospace">= 100</text>
+       <text x="364" y="116" font-size="12" text-anchor="middle" fill="var(--ink-soft)">実際の値</text>
+       <text x="20" y="156" font-size="12" fill="var(--ink-soft)">※ 型注釈は実行時の挙動を変えない。コンパイラのチェックに使われるだけ。</text>
+     </svg>` },
+   { title:"図解②　union と絞り込み（narrowing）",
+     note:"<code>string | number</code> は「どちらか」。<code>typeof</code> で分岐すると、その枝の中では型が1つに絞られる。",
+     svg:`<svg viewBox="0 0 640 235" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">
+       <rect x="220" y="14" width="200" height="44" rx="10" fill="var(--bloom-2)" stroke="var(--berry)"/>
+       <text x="320" y="42" font-size="14" text-anchor="middle" fill="var(--deep)" font-family="monospace">x: string | number</text>
+       <path d="M300,58 L160,104" stroke="var(--leaf)" stroke-width="2" fill="none"/>
+       <path d="M340,58 L480,104" stroke="var(--berry)" stroke-width="2" fill="none"/>
+       <text x="120" y="92" font-size="12" fill="var(--leaf-deep)" font-family="monospace">typeof x === "string"</text>
+       <text x="470" y="92" font-size="12" fill="var(--berry)" font-family="monospace">else</text>
+       <rect x="70" y="106" width="170" height="44" rx="10" fill="var(--leaf-soft)" stroke="var(--leaf)"/>
+       <text x="155" y="134" font-size="14" text-anchor="middle" fill="var(--leaf-deep)" font-family="monospace">x: string</text>
+       <rect x="400" y="106" width="170" height="44" rx="10" fill="#EFEAF8" stroke="var(--berry)"/>
+       <text x="485" y="134" font-size="14" text-anchor="middle" fill="var(--deep)" font-family="monospace">x: number</text>
+       <text x="155" y="184" font-size="13" text-anchor="middle" fill="var(--ink)" font-family="monospace">x.length ✓</text>
+       <text x="485" y="184" font-size="13" text-anchor="middle" fill="var(--ink)" font-family="monospace">x.toFixed() ✓</text>
+       <text x="320" y="220" font-size="12" text-anchor="middle" fill="var(--ink-soft)">分岐の枝の中では、型が1つに“絞られる”（narrowing）</text>
+     </svg>` },
+   { title:"図解③　配列とタプルのちがい",
+     note:"配列は同じ型がいくつでも。タプルは個数・順番・各位置の型まで固定。",
+     svg:`<svg viewBox="0 0 640 170" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">
+       <text x="20" y="26" font-size="13" fill="var(--deep)" font-weight="700" font-family="monospace">number[]（配列）</text>
+       <rect x="20" y="40" width="44" height="40" rx="7" fill="var(--bloom-2)" stroke="var(--berry)"/><text x="42" y="65" text-anchor="middle" fill="var(--deep)" font-family="monospace" font-size="13">1</text>
+       <rect x="70" y="40" width="44" height="40" rx="7" fill="var(--bloom-2)" stroke="var(--berry)"/><text x="92" y="65" text-anchor="middle" fill="var(--deep)" font-family="monospace" font-size="13">2</text>
+       <rect x="120" y="40" width="44" height="40" rx="7" fill="var(--bloom-2)" stroke="var(--berry)"/><text x="142" y="65" text-anchor="middle" fill="var(--deep)" font-family="monospace" font-size="13">3</text>
+       <text x="176" y="65" fill="var(--ink-soft)" font-size="12">… 何個でもOK（全部 number）</text>
+       <line x1="320" y1="14" x2="320" y2="156" stroke="var(--line)" stroke-dasharray="4 4"/>
+       <text x="346" y="26" font-size="13" fill="var(--deep)" font-weight="700" font-family="monospace">[string, number]（タプル）</text>
+       <rect x="346" y="40" width="92" height="40" rx="7" fill="var(--leaf-soft)" stroke="var(--leaf)"/><text x="392" y="65" text-anchor="middle" fill="var(--leaf-deep)" font-family="monospace" font-size="13">"x"</text>
+       <rect x="446" y="40" width="92" height="40" rx="7" fill="var(--sun-soft)" stroke="var(--sun)"/><text x="492" y="65" text-anchor="middle" fill="#7A5A12" font-family="monospace" font-size="13">1</text>
+       <text x="392" y="100" font-size="11" text-anchor="middle" fill="var(--ink-soft)">[0] = string</text>
+       <text x="492" y="100" font-size="11" text-anchor="middle" fill="var(--ink-soft)">[1] = number</text>
+       <text x="346" y="140" font-size="12" fill="var(--ink-soft)">個数・順番・各位置の型まで固定</text>
+     </svg>` }
+  ],
+  lib:[
+   { sect:"プリミティブ・基本型", items:[
+     {syntax:"string / number / boolean", desc:"文字列・数値・真偽値。最も基本の型。", ex:'const name: string = "うさうさ";\nconst age: number = 3;\nconst ok: boolean = true;'},
+     {syntax:"bigint / symbol", desc:"大きな整数（<code>100n</code>）と一意キー。", ex:'const big: bigint = 100n;\nconst key: symbol = Symbol("id");'},
+     {syntax:"null / undefined", desc:"「値が無い」を表す2つ。strict設定では区別される。"},
+     {syntax:"any", desc:"<b>型チェックを止める</b>脱出口。多用は禁物（バグの温床）。", ex:'let x: any = 1;\nx.foo.bar(); // 何もチェックされない'},
+     {syntax:"unknown", desc:"“安全な any”。使う前に型を絞る必要がある。", ex:'let v: unknown = JSON.parse(s);\nif (typeof v === "string") v.toUpperCase();'},
+     {syntax:"void / never", desc:"void＝戻り値なし、never＝決して戻らない（例外・無限ループ）。"}
+   ]},
+   { sect:"配列・タプル", items:[
+     {syntax:"T[]", desc:"Tの配列。<code>number[]</code>＝数値の配列。", ex:'const xs: number[] = [1, 2, 3];'},
+     {syntax:"Array<T>", desc:"<code>T[]</code> と同じ意味（ジェネリック記法）。", ex:'const ys: Array<string> = ["a", "b"];'},
+     {syntax:"[A, B]", desc:"タプル。個数・順番・各型が固定。", ex:'const pair: [string, number] = ["x", 1];'},
+     {syntax:"readonly T[]", desc:"中身を書き換えられない配列。", ex:'const r: readonly number[] = [1, 2];\n// r.push(3); // エラー'}
+   ]},
+   { sect:"オブジェクト・型エイリアス", items:[
+     {syntax:"{ a: number }", desc:"その場で書くオブジェクト型。"},
+     {syntax:"interface", desc:"オブジェクトの“形”に名前を付ける。拡張に強い。", ex:'interface User {\n  id: number;\n  name: string;\n}'},
+     {syntax:"type", desc:"型エイリアス。unionなどあらゆる型に名前を付けられる。", ex:'type ID = string | number;'},
+     {syntax:"x?: T", desc:"省略可能プロパティ（<code>T | undefined</code>）。", ex:'interface P { nick?: string; }'},
+     {syntax:"readonly x: T", desc:"初期化後は再代入できないプロパティ。", ex:'interface C { readonly id: number; }'}
+   ]},
+   { sect:"union・リテラル・絞り込み", items:[
+     {syntax:"A | B", desc:"union。AかBのどちらか。", ex:'type R = "ok" | "ng";'},
+     {syntax:'"a" | "b"', desc:"リテラル型。決まった値だけを許可。", ex:'function move(d: "up" | "down") {}'},
+     {syntax:"typeof / in / instanceof", desc:"<b>絞り込み</b>の道具。枝の中で型が確定する。", ex:'function f(x: string | number) {\n  if (typeof x === "string") return x.length;\n  return x.toFixed(1);\n}'}
+   ]},
+   { sect:"関数", items:[
+     {syntax:"(a: number) => number", desc:"関数の型。引数と戻り値に型を付ける。", ex:'const sq = (a: number): number => a * a;'},
+     {syntax:"name?: T ／ = 既定値", desc:"省略可能引数・デフォルト引数。", ex:'function greet(n: string, suf = "さん") {\n  return n + suf;\n}'},
+     {syntax:"...rest: T[]", desc:"可変長引数。配列で受け取る。", ex:'function sum(...ns: number[]) {\n  return ns.reduce((a, b) => a + b, 0);\n}'},
+     {syntax:": void", desc:"戻り値を返さない関数。", ex:'function log(m: string): void { console.log(m); }'}
+   ]}
+  ]
+ },
+ {
+  id:"lib-advanced", ico:"📐", nav:"文法ライブラリ・応用",
+  kicker:"LIBRARY", title:"文法ライブラリ — 応用", sub:"ジェネリクス・ユーティリティ型・型の変形まで。図解つき・公式準拠。",
+  callouts:[
+   {k:"tip", html:"<b>📘 出典：</b>公式 Handbook の Generics ／ Creating Types from Types ／ Utility Types → <a href=\"https://www.typescriptlang.org/docs/handbook/2/generics.html\" target=\"_blank\" rel=\"noopener noreferrer\">generics</a> ・ <a href=\"https://www.typescriptlang.org/docs/handbook/2/types-from-types.html\" target=\"_blank\" rel=\"noopener noreferrer\">types-from-types</a> ・ <a href=\"https://www.typescriptlang.org/docs/handbook/utility-types.html\" target=\"_blank\" rel=\"noopener noreferrer\">utility-types</a>（参考リンクは公式のみ）"}
+  ],
+  figures:[
+   { title:"図解①　ジェネリクスの流れ",
+     note:"<code>&lt;T&gt;</code> は“型の引数”。呼び出した値から型が決まり、その型が戻り値まで通る。<code>any</code> と違って型情報を失わない。",
+     svg:`<svg viewBox="0 0 640 160" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">
+       <defs><marker id="arA" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--leaf)"/></marker></defs>
+       <text x="20" y="28" font-size="13" fill="var(--deep)" font-weight="700" font-family="monospace">function identity&lt;T&gt;(x: T): T</text>
+       <rect x="20" y="46" width="150" height="48" rx="10" fill="var(--sun-soft)" stroke="var(--sun)"/>
+       <text x="95" y="70" text-anchor="middle" font-size="13" fill="#7A5A12" font-family="monospace">"hi"</text>
+       <text x="95" y="87" text-anchor="middle" font-size="11" fill="var(--ink-soft)">渡す値（string）</text>
+       <path d="M172,70 L228,70" stroke="var(--leaf)" stroke-width="2" marker-end="url(#arA)"/>
+       <rect x="232" y="46" width="166" height="48" rx="10" fill="var(--leaf-soft)" stroke="var(--leaf)"/>
+       <text x="315" y="70" text-anchor="middle" font-size="13" fill="var(--leaf-deep)" font-family="monospace">T = string</text>
+       <text x="315" y="87" text-anchor="middle" font-size="11" fill="var(--ink-soft)">型引数が決まる</text>
+       <path d="M400,70 L456,70" stroke="var(--leaf)" stroke-width="2" marker-end="url(#arA)"/>
+       <rect x="460" y="46" width="160" height="48" rx="10" fill="var(--bloom-2)" stroke="var(--berry)"/>
+       <text x="540" y="70" text-anchor="middle" font-size="13" fill="var(--deep)" font-family="monospace">戻り値: string</text>
+       <text x="540" y="87" text-anchor="middle" font-size="11" fill="var(--ink-soft)">型が最後まで通る</text>
+       <text x="20" y="134" font-size="12" fill="var(--ink-soft)">any と違い、入った型の情報を失わずに運べる。</text>
+     </svg>` },
+   { title:"図解②　Mapped Type：Partial の作られ方",
+     note:"既存の型の各プロパティを“なめて”加工。<code>?</code> を足すと全部が省略可能 ＝ <code>Partial&lt;T&gt;</code>。",
+     svg:`<svg viewBox="0 0 640 210" xmlns="http://www.w3.org/2000/svg">
+       <defs><marker id="arB" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--leaf)"/></marker></defs>
+       <rect x="20" y="26" width="184" height="96" rx="10" fill="var(--bloom-2)" stroke="var(--berry)"/>
+       <text x="34" y="50" font-size="12" fill="var(--deep)" font-family="monospace">type User = {</text>
+       <text x="48" y="70" font-size="12" fill="var(--deep)" font-family="monospace">id: number;</text>
+       <text x="48" y="90" font-size="12" fill="var(--deep)" font-family="monospace">name: string;</text>
+       <text x="34" y="110" font-size="12" fill="var(--deep)" font-family="monospace">}</text>
+       <rect x="226" y="118" width="200" height="40" rx="9" fill="var(--leaf-soft)" stroke="var(--leaf)"/>
+       <text x="326" y="143" text-anchor="middle" font-size="12" fill="var(--leaf-deep)" font-family="monospace">[K in keyof T]?: T[K]</text>
+       <path d="M204,74 L300,74 L300,116" stroke="var(--leaf)" stroke-width="2" fill="none" marker-end="url(#arB)"/>
+       <path d="M426,138 L450,138 L450,74 L432,74" stroke="var(--leaf)" stroke-width="2" fill="none" marker-end="url(#arB)"/>
+       <rect x="436" y="26" width="190" height="96" rx="10" fill="var(--sun-soft)" stroke="var(--sun)"/>
+       <text x="450" y="50" font-size="12" fill="#7A5A12" font-family="monospace">Partial&lt;User&gt; = {</text>
+       <text x="464" y="70" font-size="12" fill="#7A5A12" font-family="monospace">id?: number;</text>
+       <text x="464" y="90" font-size="12" fill="#7A5A12" font-family="monospace">name?: string;</text>
+       <text x="450" y="110" font-size="12" fill="#7A5A12" font-family="monospace">}</text>
+       <text x="20" y="188" font-size="12" fill="var(--ink-soft)" font-family="sans-serif">各キーを“なめて” ? を付ける ＝ 全プロパティ省略可能（Partial）。</text>
+     </svg>` },
+   { title:"図解③　Conditional Type：型の三項演算",
+     note:"<code>T extends U ? X : Y</code> は型レベルの if。例：<code>type IsStr&lt;T&gt; = T extends string ? \"yes\" : \"no\"</code>。",
+     svg:`<svg viewBox="0 0 640 200" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">
+       <defs>
+         <marker id="arC" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--leaf)"/></marker>
+         <marker id="arD" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--danger)"/></marker>
+       </defs>
+       <rect x="220" y="16" width="200" height="46" rx="10" fill="var(--bloom-2)" stroke="var(--berry)"/>
+       <text x="320" y="44" text-anchor="middle" font-size="13" fill="var(--deep)" font-family="monospace">T extends string ?</text>
+       <path d="M300,62 L170,112" stroke="var(--leaf)" stroke-width="2" fill="none" marker-end="url(#arC)"/>
+       <path d="M340,62 L470,112" stroke="var(--danger)" stroke-width="2" fill="none" marker-end="url(#arD)"/>
+       <text x="120" y="98" font-size="12" fill="var(--leaf-deep)">合えば（true）</text>
+       <text x="430" y="98" font-size="12" fill="var(--danger)">外れれば（false）</text>
+       <rect x="90" y="116" width="150" height="44" rx="10" fill="var(--leaf-soft)" stroke="var(--leaf)"/>
+       <text x="165" y="144" text-anchor="middle" font-size="14" fill="var(--leaf-deep)" font-family="monospace">X 型</text>
+       <rect x="400" y="116" width="150" height="44" rx="10" fill="var(--danger-soft)" stroke="var(--danger)"/>
+       <text x="475" y="144" text-anchor="middle" font-size="14" fill="var(--danger)" font-family="monospace">Y 型</text>
+       <text x="320" y="190" text-anchor="middle" font-size="12" fill="var(--ink-soft)">型レベルの三項演算子（型の if）</text>
+     </svg>` }
+  ],
+  lib:[
+   { sect:"ジェネリクス", items:[
+     {syntax:"function f<T>(x: T): T", desc:"型を引数化。呼び出しで具体化される。", ex:'function identity<T>(x: T): T { return x; }\nconst a = identity<string>("hi"); // T = string'},
+     {syntax:"<T extends U>", desc:"型引数に<b>制約</b>。Uの性質を仮定できる。", ex:'function len<T extends { length: number }>(x: T) {\n  return x.length;\n}'},
+     {syntax:"<T, K extends keyof T>", desc:"複数の型引数。Tのキーだけを受け取る。", ex:'function get<T, K extends keyof T>(o: T, k: K): T[K] {\n  return o[k];\n}'},
+     {syntax:"<T = 既定型>", desc:"型引数のデフォルト。", ex:'type Box<T = string> = { value: T };'}
+   ]},
+   { sect:"keyof・typeof・インデックスアクセス", items:[
+     {syntax:"keyof T", desc:"Tのキー名の union を作る。", ex:'type K = keyof { a: 1; b: 2 }; // "a" | "b"'},
+     {syntax:"typeof v", desc:"<b>値</b>から型を取り出す（型の文脈で）。", ex:'const u = { id: 1 };\ntype U = typeof u; // { id: number }'},
+     {syntax:"T[K]", desc:"インデックスアクセス。プロパティの型を取り出す。", ex:'type Name = { name: string }["name"]; // string'}
+   ]},
+   { sect:"ユーティリティ型（公式組み込み）", items:[
+     {syntax:"Partial<T>", desc:"全プロパティを省略可能に。", ex:'type P = Partial<{ a: number; b: string }>;'},
+     {syntax:"Required<T>", desc:"全プロパティを必須に（? を外す）。"},
+     {syntax:"Readonly<T>", desc:"全プロパティを再代入禁止に。"},
+     {syntax:"Pick<T, K>", desc:"Tから K のキーだけ<b>選ぶ</b>。", ex:'type Q = Pick<User, "id" | "name">;'},
+     {syntax:"Omit<T, K>", desc:"Tから K のキーを<b>除く</b>。", ex:'type Q = Omit<User, "password">;'},
+     {syntax:"Record<K, V>", desc:"キー K・値 V の辞書型。", ex:'type M = Record<string, number>;'},
+     {syntax:"ReturnType<F>", desc:"関数 F の<b>戻り値の型</b>。", ex:'type R = ReturnType<() => number>; // number'},
+     {syntax:"Awaited<T>", desc:"Promise の中身の型を取り出す。", ex:'type A = Awaited<Promise<string>>; // string'},
+     {syntax:"NonNullable<T>", desc:"null と undefined を除いた型。"}
+   ]},
+   { sect:"型を作る（高度な型）", items:[
+     {syntax:"T extends U ? X : Y", desc:"条件型。型レベルの if。", ex:'type IsStr<T> = T extends string ? "yes" : "no";'},
+     {syntax:"{ [K in keyof T]: ... }", desc:"Mapped Type。各キーを加工して新しい型に。", ex:'type MyPartial<T> = { [K in keyof T]?: T[K] };'},
+     {syntax:'`hello ${string}`', desc:"テンプレートリテラル型。文字列の“形”を型で表す。", ex:'type Greet = `hello ${string}`;'},
+     {syntax:"infer R", desc:"条件型の中で型を“取り出す”。", ex:'type Elem<T> = T extends (infer R)[] ? R : never;'}
+   ]},
+   { sect:"絞り込み・固定の道具", items:[
+     {syntax:"x is T（型ガード）", desc:"自作の絞り込み関数。", ex:'function isStr(x: unknown): x is string {\n  return typeof x === "string";\n}'},
+     {syntax:"discriminated union", desc:"共通の“目印”プロパティで安全に分岐。", ex:'type S =\n  | { kind: "circle"; r: number }\n  | { kind: "square"; s: number };'},
+     {syntax:"x as const", desc:"リテラル型に固定（読み取り専用）。", ex:'const dirs = ["up", "down"] as const;'},
+     {syntax:"satisfies", desc:"型に適合するか<b>確認だけ</b>し、推論は保つ。", ex:'const cfg = { port: 8080 } satisfies Record<string, number>;'}
+   ]}
+  ]
+ },
+
+ {grp:"仕上げ"},
+ {
+  id:"finish", ico:"📚", nav:"次の一歩 / チートシート / 出典",
+  kicker:"END", title:"次の一歩・チートシート・参考文献", sub:"実務に持っていく道具と、嘘のない出どころ",
+  lessons:[
+   {n:"NEXT", title:"実務へ持っていく“次の一歩”", tiers:{
+     def:"strictなtsconfigを既定にし、ESLint+Prettier、テスト、型優先のAPI設計を習慣化する。",
+     analogy:"良い農具をそろえ、毎朝同じ手順で畑を見回る。仕組みが品質を作る。",
+     detail:"小さな純粋関数→テスト→型で境界を固める、を反復。実プロジェクトの型定義を読むのが最高の教材。公式 Handbook（typescriptlang.org）で疑問を一次情報で確認する癖を。",
+     summary:"strict既定・テスト習慣・一次情報。これが伸び続けるコツ。"
+   }}
+  ],
+  cheat:[
+   ["string / number / boolean","基本のプリミティブ型"],
+   ["T[] / Array<T>","配列。中身の型は T"],
+   ["[A, B]","タプル（個数・順番固定）"],
+   ["A | B","union（どちらか）"],
+   ["A & B","交差（両方を併せ持つ）"],
+   ['"a" | "b"',"リテラルの選択肢"],
+   ["x?: T","省略可能プロパティ/引数"],
+   ["readonly x: T","再代入禁止"],
+   ["unknown","安全なany（使う前に絞る）"],
+   ["never","起き得ない/必ず例外"],
+   ["keyof T","Tのキー名のunion"],
+   ["typeof v","値から型を取り出す"],
+   ["Partial / Required","全optional / 全必須"],
+   ["Pick / Omit","選ぶ / 除く"],
+   ["Record<K,V>","辞書型"],
+   ["ReturnType<F>","関数の戻り型"],
+   ["Promise<T> / await","非同期。中身は T"],
+   ["a ?? b","aがnull/undefinedならb"],
+   ["a?.b","あれば参照（optional chaining）"],
+   ["x as const","リテラル型に固定"]
+  ],
+  refs:[
+   'TypeScript 公式ドキュメント（The TypeScript Handbook）— <a href="https://www.typescriptlang.org/docs/" target="_blank" rel="noopener noreferrer">typescriptlang.org/docs/</a>（本教材の文法はこれに準拠／参考リンクは公式のみ）',
+   '<b>[1]</b> Roediger, H. L., &amp; Karpicke, J. D. (2006). Test-enhanced learning: Taking memory tests improves long-term retention. <i>Psychological Science, 17</i>(3), 249–255. doi:10.1111/j.1467-9280.2006.01693.x',
+   '<b>[2]</b> Dunlosky, J., Rawson, K. A., Marsh, E. J., Nathan, M. J., &amp; Willingham, D. T. (2013). Improving students\u2019 learning with effective learning techniques. <i>Psychological Science in the Public Interest, 14</i>(1), 4–58. doi:10.1177/1529100612453266（practice testing と distributed practice を“最も有用”と評価）',
+   '<b>[3]</b> Cepeda, N. J., Pashler, H., Vul, E., Wixted, J. T., &amp; Rohrer, D. (2006). Distributed practice in verbal recall tasks: A review and quantitative synthesis. <i>Psychological Bulletin, 132</i>(3), 354–380. doi:10.1037/0033-2909.132.3.354（間隔をあける学習の効果）'
+  ]
+ }
+];
+
+/* ===================== 描画 ===================== */
+const view = document.getElementById("view");
+const navEl = document.getElementById("nav");
+const chapters = DATA.filter(d=>d.id);
+
+// 収穫対象の総数
+const ALL_PRACTICE_IDS = [];
+chapters.forEach(ch => (ch.practice||[]).forEach(p => ALL_PRACTICE_IDS.push(p.id)));
+document.getElementById("total").textContent = ALL_PRACTICE_IDS.length;
+
+function buildNav(){
+  let html="";
+  DATA.forEach(d=>{
+    if(d.grp){ html+='<li class="grp">'+d.grp+'</li>'; return; }
+    html+='<li><button data-id="'+d.id+'"><span class="ico">'+d.ico+'</span><span>'+d.nav+'</span><span class="dot"></span></button></li>';
+  });
+  navEl.innerHTML=html;
+  navEl.querySelectorAll("button").forEach(b=>{
+    b.addEventListener("click",()=>{ goTo(b.dataset.id); closeMenu(); });
+  });
+}
+
+function chapterDone(ch){
+  const ids=(ch.practice||[]).map(p=>p.id);
+  return ids.length>0 && ids.every(id=>done.has(id));
+}
+function refreshNavDots(){
+  navEl.querySelectorAll("button").forEach(b=>{
+    const ch=chapters.find(c=>c.id===b.dataset.id);
+    b.classList.toggle("done", ch?chapterDone(ch):false);
+  });
+}
+
+function esc(s){return s;}
+
+function renderCode(c){
+  const fn=c.fn?'<span class="fn">'+c.fn+'</span>':'';
+  return '<div class="code"><div class="hd"><span class="d"></span><span class="d" style="background:#5a5577"></span><span class="d" style="background:#6f6a93"></span>'+fn+
+    '<button class="copy" type="button">コピー</button></div><pre><code>'+hl(c.body)+'</code></pre></div>';
+}
+
+function renderLesson(ls, idx){
+  let h='<div class="lesson"><h3><span class="n">'+(ls.n||("L"+(idx+1)))+'</span>'+ls.title+'</h3>';
+  const t=ls.tiers||{};
+  const row=(cls,em,lab,bd)=> bd?('<div class="tier '+cls+'"><div class="lab"><span class="em">'+em+'</span>'+lab+'</div><div class="bd">'+bd+'</div></div>'):'';
+  h+=row("def","🫐","定義",t.def);
+  h+=row("analogy","🌿","たとえ",t.analogy);
+  h+=row("detail","🔍","詳細",t.detail);
+  if(ls.code) ls.code.forEach(c=> h+=renderCode(c));
+  h+=row("summary","⭐","一言まとめ",t.summary);
+  h+='</div>';
+  return h;
+}
+
+function renderPractice(p){
+  if(p.type==="mc"){
+    const ch=p.choices.map((c,i)=>'<div class="choice" data-i="'+i+'"><span class="mk">✓</span><span>'+c+'</span></div>').join("");
+    return '<div class="practice" data-pid="'+p.id+'" data-type="mc" data-answer="'+p.answer+'">'+
+      '<div class="ph"><span class="tag q">プチ問題</span></div>'+
+      '<div class="qx">'+p.q+'</div><div class="choices">'+ch+'</div>'+
+      '<div class="explain"><span class="verdict"></span><span class="etext">'+p.explain+'</span></div></div>';
+  }
+  if(p.type==="input"){
+    return '<div class="practice" data-pid="'+p.id+'" data-type="input">'+
+      '<div class="ph"><span class="tag q">記述</span></div>'+
+      '<div class="qx">'+p.q+'</div>'+
+      '<div class="inputrow"><input type="text" placeholder="'+(p.placeholder||"答えを入力")+'" autocomplete="off" spellcheck="false"/>'+
+      '<button class="btn sm" type="button" data-act="check">答え合わせ</button>'+
+      '<button class="btn ghost sm" type="button" data-act="reveal">答えを見る</button></div>'+
+      '<div class="explain"><span class="verdict"></span><span class="etext"><b>解答例：</b><code>'+p.accept[0]+'</code> ／ '+p.explain+'</span></div></div>';
+  }
+  if(p.type==="bug"){
+    const lady='<svg viewBox="0 0 24 22" width="20" height="18" aria-hidden="true">'+
+      '<ellipse cx="12" cy="12.5" rx="9" ry="9" fill="#E0584C" stroke="#2A2238" stroke-width="1.2"/>'+
+      '<path d="M12 4.5 L12 21" stroke="#2A2238" stroke-width="1.4"/>'+
+      '<circle cx="8.6" cy="9.5" r="1.5" fill="#2A2238"/><circle cx="15.4" cy="9.5" r="1.5" fill="#2A2238"/>'+
+      '<circle cx="8" cy="15" r="1.4" fill="#2A2238"/><circle cx="16" cy="15" r="1.4" fill="#2A2238"/>'+
+      '<circle cx="12" cy="4" r="2.8" fill="#2A2238"/>'+
+      '<circle cx="10.9" cy="3.6" r=".6" fill="#fff"/><circle cx="13.1" cy="3.6" r=".6" fill="#fff"/></svg>';
+    return '<div class="practice" data-pid="'+p.id+'" data-type="bug">'+
+      '<div class="ph"><span class="tag b">バグ修正</span><b style="color:var(--deep)">'+p.title+'</b></div>'+
+      '<div class="bug-grid"><div class="bug-label ng">🐛 バグあり</div>'+
+      renderCode({fn:"buggy",body:p.buggy})+
+      (p.hint?'<div class="callout warn" style="margin:4px 0">💡 ヒント：'+p.hint+'</div>':'')+
+      '<button class="bugbtn" type="button" data-act="fix"><span class="lady">'+lady+'</span>テントウムシで退治（修正を見る）</button>'+
+      '<div class="fixwrap"><div class="bug-label ok">✅ 修正後</div>'+
+      renderCode({fn:"fixed",body:p.fixed})+
+      '<div class="explain show" style="margin-top:4px"><span class="etext">'+p.explain+'</span></div></div>'+
+      '</div></div>';
+  }
+  return "";
+}
+
+function escH(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function renderFigure(f){
+  return '<figure class="figure"><figcaption class="fig-cap"><span class="lf">🌿</span>'+f.title+'</figcaption>'+
+    '<div class="fig-svg">'+f.svg+'</div>'+
+    (f.note?'<p class="fig-note">'+f.note+'</p>':'')+'</figure>';
+}
+function renderLib(lib){
+  let h='';
+  lib.forEach(sec=>{
+    h+='<div class="lib-sec"><h3 class="lib-h"><span class="lf">🌿</span>'+sec.sect+'</h3><div class="lib-grid">';
+    sec.items.forEach(it=>{
+      h+='<div class="lib-card">'+
+         '<code class="lib-syntax">'+escH(it.syntax)+'</code>'+
+         '<div class="lib-desc">'+it.desc+'</div>'+
+         (it.ex?'<pre class="lib-ex"><code>'+hl(it.ex)+'</code></pre>':'')+
+         '</div>';
+    });
+    h+='</div></div>';
+  });
+  return h;
+}
+
+function renderChapter(ch){
+  let h='<div class="kicker">'+ch.kicker+'</div><h2 class="title">'+ch.title+'</h2><p class="subtitle">'+ch.sub+'</p><div class="divider"></div>';
+  (ch.lessons||[]).forEach((ls,i)=> h+=renderLesson(ls,i));
+  (ch.callouts||[]).forEach(c=> h+='<div class="callout '+(c.k||"")+'">'+c.html+'</div>');
+  if(ch.figures) ch.figures.forEach(f=> h+=renderFigure(f));
+  if(ch.lib) h+=renderLib(ch.lib);
+  if(ch.cheat){
+    h+='<h3 style="color:var(--deep);margin:22px 0 6px">🗂️ チートシート</h3><div class="cheat">';
+    ch.cheat.forEach(row=> h+='<div class="k">'+row[0].replace(/</g,"&lt;")+'</div><div>'+row[1]+'</div>');
+    h+='</div>';
+  }
+  if(ch.practice && ch.practice.length){
+    h+='<h3 style="color:var(--deep);margin:24px 0 4px">🧺 摘んで覚える（'+ch.practice.length+'粒）</h3>';
+    ch.practice.forEach(p=> h+=renderPractice(p));
+  }
+  if(ch.refs){
+    h+='<h3 style="color:var(--deep);margin:22px 0 6px">📄 参考文献（実在・出典つき）</h3><div class="ref"><ol>';
+    ch.refs.forEach(r=> h+='<li>'+r+'</li>');
+    h+='</ol></div>';
+  }
+  return h;
+}
+
+let current=null;
+function goTo(id){
+  const ch=chapters.find(c=>c.id===id); if(!ch) return;
+  current=id;
+  try{
+    view.innerHTML=renderChapter(ch);
+  }catch(err){
+    console.error("renderChapter error:", err);
+    view.innerHTML='<div class="lesson"><h3>⚠️ 表示でエラーが発生しました</h3>'+
+      '<p>このチャプターの描画中に問題が起きました。別のチャプターを選び直してください。</p>'+
+      '<pre style="white-space:pre-wrap;color:var(--danger);font-size:12px;margin:0">'+String((err&&err.message)||err)+'</pre></div>';
+  }
+  navEl.querySelectorAll("button").forEach(b=> b.classList.toggle("active", b.dataset.id===id));
+  try{ bindPractice(); restoreAnswered(); }catch(e){ console.error("bind error:", e); }
+  try{ window.scrollTo({top:0,behavior:"auto"}); }catch(e){}
+  Store.set("usausa_ts_last", id);
+}
+
+/* ---- 練習のイベント ---- */
+function norm(s){ return (s||"").replace(/\s+/g," ").trim().replace(/\s*([|<>(){},:;=])\s*/g," $1 ").replace(/\s+/g," ").trim(); }
+
+function bindPractice(){
+  // コピー
+  view.querySelectorAll(".code .copy").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const code=btn.closest(".code").querySelector("code").innerText;
+      navigator.clipboard?.writeText(code).then(()=>{ btn.textContent="コピー済み✓"; setTimeout(()=>btn.textContent="コピー",1400); }).catch(()=>{});
+    });
+  });
+  view.querySelectorAll(".practice").forEach(pr=>{
+    const pid=pr.dataset.pid, type=pr.dataset.type;
+    if(type==="mc"){
+      const ans=+pr.dataset.answer, exp=pr.querySelector(".explain"), vd=exp.querySelector(".verdict");
+      pr.querySelectorAll(".choice").forEach(ch=>{
+        ch.addEventListener("click",()=>{
+          if(pr.dataset.answered) return;
+          const i=+ch.dataset.i; pr.dataset.answered="1";
+          pr.querySelectorAll(".choice").forEach(c=>c.classList.add("disabled"));
+          if(i===ans){ ch.classList.add("correct"); vd.textContent="正解！🫐"; vd.className="verdict ok"; markDone(pid); }
+          else{ ch.classList.add("wrong"); pr.querySelector('.choice[data-i="'+ans+'"]').classList.add("correct"); vd.textContent="おしい！"; vd.className="verdict ng"; }
+          exp.classList.add("show");
+        });
+      });
+    }
+    if(type==="input"){
+      const data=findPractice(pid), exp=pr.querySelector(".explain"), vd=exp.querySelector(".verdict");
+      const input=pr.querySelector("input");
+      const check=()=>{
+        if(pr.dataset.answered==="ok") return;
+        const v=norm(input.value), hit=data.accept.some(a=>norm(a)===v);
+        exp.classList.add("show");
+        if(hit){ vd.textContent="正解！🫐"; vd.className="verdict ok"; pr.dataset.answered="ok"; input.style.borderColor="var(--leaf)"; markDone(pid); }
+        else{ vd.textContent="もう少し！（解答例を確認）"; vd.className="verdict ng"; input.style.borderColor="var(--danger)"; }
+      };
+      pr.querySelector('[data-act="check"]').addEventListener("click",check);
+      pr.querySelector('[data-act="reveal"]').addEventListener("click",()=>{ exp.classList.add("show"); if(!vd.textContent){vd.textContent="解答例👇";vd.className="verdict";} });
+      input.addEventListener("keydown",e=>{ if(e.key==="Enter") check(); });
+    }
+    if(type==="bug"){
+      const fw=pr.querySelector(".fixwrap"), btn=pr.querySelector('[data-act="fix"]');
+      btn.addEventListener("click",()=>{
+        fw.classList.add("show"); btn.style.display="none"; markDone(pid);
+      });
+    }
+  });
+}
+function findPractice(pid){
+  for(const ch of chapters){ for(const p of (ch.practice||[])){ if(p.id===pid) return p; } }
+  return null;
+}
+// 既に収穫済みの練習を“完了表示”に戻す
+function restoreAnswered(){
+  view.querySelectorAll(".practice").forEach(pr=>{
+    if(done.has(pr.dataset.pid)){
+      if(pr.dataset.type==="bug"){ const fw=pr.querySelector(".fixwrap"),btn=pr.querySelector('[data-act="fix"]'); if(fw){fw.classList.add("show");} if(btn){btn.style.display="none";} }
+      else { pr.style.borderColor="var(--leaf)";
+        const badge=document.createElement("span"); badge.textContent="収穫済み 🫐"; badge.style.cssText="margin-left:auto;font-size:11px;color:var(--leaf);font-weight:700";
+        pr.querySelector(".ph")?.appendChild(badge); }
+    }
+  });
+}
+
+/* ---- 収穫カゴ ---- */
+function refreshProgress(){
+  const total=ALL_PRACTICE_IDS.length;
+  const got=ALL_PRACTICE_IDS.filter(id=>done.has(id)).length;
+  document.getElementById("harvest").textContent=got;
+  document.getElementById("bar").style.width=(total? (got/total*100):0)+"%";
+  // bush（最大14粒で見た目表現）
+  const bush=document.getElementById("bush");
+  const N=14; if(bush.children.length!==N){ bush.innerHTML=""; for(let i=0;i<N;i++) bush.appendChild(document.createElement("i")); }
+  const ripe=total? Math.round(got/total*N):0;
+  [...bush.children].forEach((el,i)=> el.classList.toggle("ripe", i<ripe));
+}
+
+/* ---- モバイルメニュー ---- */
+const side=document.getElementById("side"), scrim=document.getElementById("scrim");
+function openMenu(){ side.classList.add("open"); scrim.classList.add("open"); }
+function closeMenu(){ side.classList.remove("open"); scrim.classList.remove("open"); }
+document.getElementById("menuBtn").addEventListener("click",openMenu);
+scrim.addEventListener("click",closeMenu);
+
+/* ========================================================================
+   やさしく応援（収穫トースト）
+   ======================================================================== */
+const CHEERS = [
+  ["🫐","ナイス収穫！その調子だよ"],
+  ["🌱","一粒ずつ、ちゃんと実ってる"],
+  ["✨","よく思い出せたね、えらい！"],
+  ["🐰","あせらず畑をならす感じでOK"],
+  ["☀️","今日のあなた、伸びてるよ！"],
+  ["🧺","カゴが少しずつ重くなってきた"],
+  ["💪","間違えても大丈夫、それが学び"],
+  ["🎉","コツコツが一番つよい、最高！"]
+];
+let cheerIdx = 0;
+function cheer(){
+  const wrap = document.getElementById("cheerWrap");
+  if(!wrap) return;
+  const pair = CHEERS[cheerIdx % CHEERS.length]; cheerIdx++;
+  const el = document.createElement("div");
+  el.className = "cheer";
+  el.innerHTML = '<span class="e">'+pair[0]+'</span><span>'+pair[1]+'</span>';
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),420); }, 2200);
+}
+
+/* ========================================================================
+   AI先生（本物のAI / BYOK：あなた専用APIキーで動きます）
+   嘘つかない原則：偽のAIは出しません。鍵が無ければ正直にそう伝えます。
+   参考URLの制限：AIにも「公式docs(typescriptlang.org)以外のURLは出すな」と指示。
+   ======================================================================== */
+const AI_ENDPOINT = "https://api.anthropic.com/v1/messages";
+function aiCfg(){
+  return {
+    key: Store.get("usausa_ai_key") || "",
+    model: Store.get("usausa_ai_model") || "claude-sonnet-4-6",
+    endpoint: AI_ENDPOINT
+  };
+}
+function setAiCfg(patch){
+  if("key" in patch) Store.set("usausa_ai_key", patch.key||"");
+  if("model" in patch) Store.set("usausa_ai_model", patch.model||"");
+}
+function curChapterTitle(){
+  const ch = chapters.find(c=>c.id===current);
+  return ch ? (ch.nav || ch.title || "") : "（イントロ）";
+}
+function buildSystemPrompt(){
+  return [
+    "あなたは「うさうさ先生🐰」。やさしく前向きに応援する、TypeScriptの個人指導の先生です。",
+    "受講生はTypeScriptをゼロから学んでいます。いま開いている章：「"+curChapterTitle()+"」。",
+    "回答ルール：",
+    "・日本語で、短く具体的に。難しい用語はやさしく噛み砕く。",
+    "・うさうさ式の順番でわかりやすく：定義 → たとえ → 詳細 → 一言まとめ。",
+    "・コード例は実際に動く正しいTypeScriptで示す。",
+    "・最後に必ず一言、やさしい応援を添える。",
+    "【嘘つかない原則】あいまいな事実は断定しない。わからない時は正直に『公式ドキュメントで確認してね』と言う。",
+    "【参考URLの制限】参考リンクを出すときは TypeScript 公式ドキュメント（typescriptlang.org）だけにする。それ以外のURLは絶対に案内しない。",
+    "モデル名・料金・APIの最新仕様は変わるので断定せず、公式の確認を促す。"
+  ].join("\n");
+}
+async function callAI(messages){
+  const cfg = aiCfg();
+  if(!cfg.key) throw new Error("NO_KEY");
+  const res = await fetch(cfg.endpoint, {
+    method:"POST",
+    headers:{
+      "content-type":"application/json",
+      "x-api-key": cfg.key,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    },
+    body: JSON.stringify({
+      model: cfg.model,
+      max_tokens: 1024,
+      system: buildSystemPrompt(),
+      messages: messages
+    })
+  });
+  if(!res.ok){
+    let detail=""; try{ detail=await res.text(); }catch(e){}
+    throw new Error("HTTP_"+res.status+(detail?(": "+detail.slice(0,200)):""));
+  }
+  const data = await res.json();
+  const text = (data.content||[]).filter(b=>b&&b.type==="text").map(b=>b.text).join("\n").trim();
+  return text || "（空の応答が返ってきました。もう一度試してね）";
+}
+
+/* ---- チャットUI ---- */
+const aiPanel=document.getElementById("aiPanel");
+const aiBody=document.getElementById("aiBody");
+const aiInput=document.getElementById("aiInput");
+const aiSettings=document.getElementById("aiSettings");
+const aiFoot=document.getElementById("aiFoot");
+let chatHistory=[];     // {role:"user"|"assistant", content:string}
+let aiBusy=false;
+
+function aiBubble(role, text){
+  const el=document.createElement("div");
+  el.className="msg "+(role==="user"?"me":role==="assistant"?"ai":"sys");
+  const safe=String(text).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+                 .replace(/`([^`]+)`/g,'<code>$1</code>');
+  el.innerHTML=safe;
+  aiBody.appendChild(el);
+  aiBody.scrollTop=aiBody.scrollHeight;
+  return el;
+}
+function aiTyping(on){
+  let t=document.getElementById("aiTyping");
+  if(on){ if(!t){ t=document.createElement("div"); t.id="aiTyping"; t.className="ai-typing"; t.innerHTML='うさうさ先生が考え中 <i></i><i></i><i></i>'; aiBody.appendChild(t); aiBody.scrollTop=aiBody.scrollHeight; } }
+  else if(t){ t.remove(); }
+}
+function aiWelcome(){
+  if(aiBody.childElementCount>0) return;
+  aiBubble("system","🐰 うさうさAI先生だよ。TypeScriptの質問、なんでもどうぞ！\nこれは“本物のAI”で動きます（あなた専用のAPIキーが必要）。⚙️から設定してね。");
+}
+async function chatSend(text){
+  text=(text||"").trim();
+  if(!text || aiBusy) return;
+  const cfg=aiCfg();
+  if(!cfg.key){
+    aiBubble("user",text);
+    aiBubble("system","APIキーがまだ未設定です。⚙️（設定）から、あなた専用のAnthropic APIキーを入れてね。鍵はこのブラウザだけに保存されます。");
+    openAiSettings(true);
+    return;
+  }
+  aiBusy=true; aiInput.value=""; autoGrow();
+  const sb0=document.getElementById("aiSendBtn"); if(sb0) sb0.disabled=true;
+  aiBubble("user",text);
+  chatHistory.push({role:"user",content:text});
+  aiTyping(true);
+  try{
+    const reply=await callAI(chatHistory);
+    aiTyping(false);
+    aiBubble("assistant",reply);
+    chatHistory.push({role:"assistant",content:reply});
+    const sp=document.getElementById("aiSpeak");
+    if(sp && sp.checked) speak(reply);
+  }catch(err){
+    aiTyping(false);
+    let m=String((err&&err.message)||err);
+    if(m==="NO_KEY") m="APIキーが未設定です（⚙️から設定してね）。";
+    else if(m.indexOf("HTTP_401")===0) m="認証に失敗しました。APIキーをもう一度確認してね。";
+    else if(m.indexOf("HTTP_404")===0) m="モデル名が見つかりません。⚙️でモデル名を公式docsの最新に直してね。";
+    else if(m.indexOf("HTTP_429")===0) m="アクセスが多すぎるみたい。少し待ってからもう一度試してね。";
+    else if(/Failed to fetch|NetworkError|TypeError/.test(m)) m="ネットワークに接続できませんでした。オフライン時はAI先生は使えません（教材本体はオフラインでOK）。";
+    aiBubble("system","⚠️ "+m);
+  }finally{
+    aiBusy=false;
+    const sb=document.getElementById("aiSendBtn"); if(sb) sb.disabled=false;
+  }
+}
+
+/* ---- 音声：相談（入力）と読み上げ（出力）。Web Speech API・機能検出つき ---- */
+const SR = (typeof window!=="undefined") && (window.SpeechRecognition || window.webkitSpeechRecognition);
+let recog=null, recOn=false;
+function speak(text){
+  try{
+    if(!("speechSynthesis" in window)) return;
+    const u=new SpeechSynthesisUtterance(String(text).replace(/`/g,""));
+    u.lang="ja-JP"; u.rate=1.02; u.pitch=1.05;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function setupVoice(){
+  const mic=document.getElementById("aiMic");
+  const note=document.getElementById("aiVoiceNote");
+  const sp=document.getElementById("aiSpeak");
+  const speakWrap=sp?sp.closest(".ai-toggle"):null;
+  if(!("speechSynthesis" in window) && speakWrap){ speakWrap.style.display="none"; }
+  if(!SR){
+    if(mic){ mic.style.display="none"; }
+    if(note){ note.textContent="（このブラウザは音声入力に未対応）"; }
+    return;
+  }
+  if(note) note.textContent="🎤で話して相談できます";
+  if(mic) mic.addEventListener("click",()=>{
+    if(recOn){ try{recog&&recog.stop();}catch(e){} return; }
+    try{
+      recog=new SR(); recog.lang="ja-JP"; recog.interimResults=false; recog.maxAlternatives=1;
+      recog.onstart=()=>{ recOn=true; mic.classList.add("rec"); };
+      recog.onend=()=>{ recOn=false; mic.classList.remove("rec"); };
+      recog.onerror=()=>{ recOn=false; mic.classList.remove("rec"); };
+      recog.onresult=(ev)=>{ const t=ev.results[0][0].transcript; aiInput.value=(aiInput.value?aiInput.value+" ":"")+t; autoGrow(); aiInput.focus(); };
+      recog.start();
+    }catch(e){ if(note) note.textContent="音声入力を開始できませんでした"; }
+  });
+}
+
+/* ---- 設定パネル ---- */
+function openAiSettings(on){
+  if(on){ aiSettings.classList.add("open"); aiFoot.style.display="none"; aiBody.style.display="none";
+    document.getElementById("aiKey").value=aiCfg().key;
+    document.getElementById("aiModel").value=aiCfg().model;
+  }else{ aiSettings.classList.remove("open"); aiFoot.style.display=""; aiBody.style.display=""; }
+}
+
+/* ---- パネル開閉・配線 ---- */
+function autoGrow(){ if(!aiInput) return; aiInput.style.height="auto"; aiInput.style.height=Math.min(aiInput.scrollHeight,120)+"px"; }
+function openAiPanel(){ aiPanel.classList.add("open"); const f=document.getElementById("aiFab"); if(f) f.style.display="none"; aiWelcome(); setTimeout(()=>aiInput&&aiInput.focus(),60); }
+function closeAiPanel(){ aiPanel.classList.remove("open"); const f=document.getElementById("aiFab"); if(f) f.style.display=""; openAiSettings(false); }
+
+(function wireAI(){
+  const on=(id,ev,fn)=>{ const el=document.getElementById(id); if(el) el.addEventListener(ev,fn); };
+  on("aiFab","click",openAiPanel);
+  on("aiClose","click",closeAiPanel);
+  on("aiGear","click",()=>openAiSettings(true));
+  on("aiBack","click",()=>openAiSettings(false));
+  on("aiSendBtn","click",()=>chatSend(aiInput.value));
+  on("aiSave","click",()=>{
+    setAiCfg({key:document.getElementById("aiKey").value.trim(), model:(document.getElementById("aiModel").value.trim()||"claude-sonnet-4-6")});
+    openAiSettings(false);
+    aiBubble("system","✅ 設定を保存しました。さっそく質問してみよう！");
+  });
+  on("aiClear","click",()=>{
+    setAiCfg({key:""}); document.getElementById("aiKey").value="";
+    aiBubble("system","🔒 APIキーを消しました。");
+  });
+  if(aiInput){
+    aiInput.addEventListener("input",autoGrow);
+    aiInput.addEventListener("keydown",(e)=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); chatSend(aiInput.value); } });
+  }
+  setupVoice();
+})();
+
+/* ---- 起動 ---- */
+buildNav();
+refreshProgress();
+refreshNavDots();
+const last=Store.get("usausa_ts_last");
+goTo(last && chapters.some(c=>c.id===last) ? last : "intro");
+// 念のため：万一 view が空なら必ず intro を描画（真っ白防止）
+if(!view.innerHTML.trim()) goTo("intro");
+</script>
+</body>
+</html>
